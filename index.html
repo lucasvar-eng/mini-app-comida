@@ -433,6 +433,156 @@
       display: block;
     }
 
+    .hero-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px 16px 14px;
+      box-shadow: var(--shadow);
+      margin-bottom: 12px;
+    }
+
+    .hero-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .hero-day {
+      font-weight: 800;
+      color: var(--ink);
+      font-size: 14px;
+    }
+
+    .ghost-btn {
+      width: auto;
+      min-height: 30px;
+      padding: 5px 10px;
+      background: #fff;
+      color: var(--green-dark);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .ghost-btn.on {
+      background: var(--green-dark);
+      color: #fff;
+      border-color: var(--green-dark);
+    }
+
+    .hero-kcal {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin: 6px 0 0;
+    }
+
+    .hero-kcal strong {
+      font-size: clamp(40px, 11vw, 56px);
+      line-height: 1;
+      color: var(--green-dark);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-unit {
+      font-size: 15px;
+      color: var(--muted);
+      font-weight: 800;
+    }
+
+    .hero-meta {
+      margin: 2px 0 10px;
+    }
+
+    .progress.big {
+      height: 12px;
+    }
+
+    .hero-card.over .progress span,
+    .hero-card.below .progress span { background: var(--amber); }
+    .hero-card.flex .progress span { background: transparent; }
+    .hero-card.flex .hero-kcal strong { color: var(--ink); }
+
+    .hero-msg {
+      margin-top: 10px;
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hero-msg.muted { color: var(--muted); font-weight: 600; }
+
+    .advice {
+      background: #fff5e0;
+      border: 1px solid #ead7a2;
+      color: #4a3a14;
+      border-radius: 10px;
+      padding: 14px 14px 12px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .advice h3 {
+      color: var(--amber);
+      margin: 0 0 6px;
+      font-size: 15px;
+    }
+
+    .advice p {
+      font-size: 13px;
+      margin: 0 0 8px;
+    }
+
+    .advice .reasons {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 10px;
+      font-size: 12px;
+      color: #594510;
+    }
+
+    .advice .reasons li::before {
+      content: "• ";
+      color: var(--amber);
+    }
+
+    .advice button.primary {
+      background: var(--amber);
+      border-color: var(--amber);
+      color: #fff;
+    }
+
+    table.weekly { border-radius: 8px; }
+    table.weekly th, table.weekly td { padding: 6px 8px; font-size: 12px; }
+    table.weekly td:nth-child(3), table.weekly td:nth-child(4) { text-align: right; }
+    table.weekly td.today { font-weight: 800; }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ddd;
+    }
+    .dot.ok { background: var(--green); }
+    .dot.off { background: var(--amber); }
+    .dot.flex { background: var(--blue); }
+    .dot.empty { background: #d8d8d8; }
+
+    .weekly-foot {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--ink);
+      line-height: 1.5;
+    }
+
+    .weekly-foot strong { color: var(--green-dark); }
+
     .entry-title {
       font-weight: 800;
       margin-bottom: 2px;
@@ -476,7 +626,7 @@
   </header>
 
   <main>
-    <section class="screen active" id="home">
+    <section class="screen" id="home">
       <h2>Hoy, lo importante</h2>
       <div class="grid">
         <div class="card metric">
@@ -565,11 +715,13 @@
       </table>
     </section>
 
-    <section class="screen" id="log">
+    <section class="screen active" id="log">
       <h2>Registro diario</h2>
-      <div class="notice">Check-in una vez por dia. Las comidas se cargan por horario, como diario: primera comida, almuerzo, merienda, pre-entreno, cena/post y social.</div>
 
+      <div class="hero-card" id="dailyHero"></div>
       <div class="daily-summary" id="dailySummary"></div>
+      <div id="adviceBanner"></div>
+      <div class="card" id="weeklyReview" style="display:none; margin-bottom:12px; background:#eef5f1; border-color:#cfe2d9"></div>
 
       <div class="card">
         <h3>Check-in del dia</h3>
@@ -668,6 +820,8 @@
 
       <div class="meal-grid" id="mealDiary"></div>
 
+      <div class="card" style="margin-top:12px" id="weeklyView"></div>
+
       <div class="card" style="margin-top:12px">
         <div class="log-form">
           <button class="secondary" id="exportLog">Exportar registros</button>
@@ -680,10 +834,10 @@
   </main>
 
   <nav class="tabs" aria-label="Secciones">
-    <button class="tab active" data-screen="home">Inicio</button>
+    <button class="tab" data-screen="home">Inicio</button>
     <button class="tab" data-screen="ideas">Ideas</button>
     <button class="tab" data-screen="treats">Gustos</button>
-    <button class="tab" data-screen="log">Registro</button>
+    <button class="tab active" data-screen="log">Registro</button>
   </nav>
 
   <script>
@@ -1267,10 +1421,59 @@
           saved.presetUsage = saved.presetUsage || {};
           saved.favorites = saved.favorites || [];
           saved.measurements = saved.measurements || {};
+          saved.overrides = saved.overrides || {};
+          saved.dismissedAdvice = saved.dismissedAdvice || {};
+          saved.weeklyReview = saved.weeklyReview || null;
           return saved;
         }
       } catch {}
-      return { checkins: {}, foods: [], presetUsage: {}, favorites: [], measurements: {} };
+      return {
+        checkins: {}, foods: [], presetUsage: {}, favorites: [],
+        measurements: {}, overrides: {}, dismissedAdvice: {}, weeklyReview: null
+      };
+    }
+
+    function shiftDate(dateStr, days) {
+      const ref = new Date(dateStr + "T12:00:00");
+      ref.setDate(ref.getDate() + days);
+      return ref.toISOString().slice(0, 10);
+    }
+
+    function fatigueSignal(dateStr) {
+      const diary = getDiary();
+      const reasons = [];
+      let score = 0;
+      let withData = 0;
+      for (let offset = 0; offset >= -2; offset--) {
+        const key = shiftDate(dateStr, offset);
+        const c = diary.checkins[key];
+        if (!c) continue;
+        withData += 1;
+        if (c.sleep === "Menos de 6 h") { score += 2; reasons.push(`${dayLabel(key)}: sueño <6 h`); }
+        else if (c.sleep === "6-7 h") { score += 1; reasons.push(`${dayLabel(key)}: sueño 6-7 h`); }
+        if (c.hunger === "Alta") { score += 1; reasons.push(`${dayLabel(key)}: hambre alta`); }
+        if (c.energy === "Baja") { score += 1; reasons.push(`${dayLabel(key)}: energia baja`); }
+      }
+      let severity = 0;
+      if (withData >= 2 && score >= 6) severity = 2;
+      else if (withData >= 2 && score >= 4) severity = 1;
+      return { severity, reasons, withData };
+    }
+
+    function adviceFor(severity) {
+      if (severity === 2) return {
+        kcal: 300, protein: 30,
+        title: "Señal de fatiga fuerte (últimos 3 días)",
+        body: "Sueño bajo + hambre alta sostenidos. Bajo este patrón el déficit suele sesgar la pérdida hacia músculo en vez de grasa (evidencia Nedeltcheva 2010, Wang 2018). Recomendación firme hoy:",
+        action: "+300 kcal en carbos (cerca del entreno) + 30 g proteína extra."
+      };
+      if (severity === 1) return {
+        kcal: 200, protein: 20,
+        title: "Señal de fatiga moderada (últimos 2-3 días)",
+        body: "Sueño bajo y/o hambre alta. Vale la pena suavizar el déficit hoy para proteger recuperación.",
+        action: "+200 kcal en carbos + 20 g proteína extra."
+      };
+      return null;
     }
 
     function saveDiary(data) {
@@ -1306,6 +1509,33 @@
         }, { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
     }
 
+    let macroView = "consumed";
+
+    function dayLabel(dateStr) {
+      const today = new Date().toISOString().slice(0, 10);
+      const ref = new Date(dateStr + "T12:00:00");
+      const todayRef = new Date(today + "T12:00:00");
+      const deltaDays = Math.round((ref - todayRef) / (1000 * 60 * 60 * 24));
+      if (deltaDays === 0) return "Hoy";
+      if (deltaDays === -1) return "Ayer";
+      if (deltaDays === 1) return "Mañana";
+      const months = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+      return `${ref.getDate()} ${months[ref.getMonth()]}`;
+    }
+
+    function formatRange(range, unit) {
+      if (range.floor) return `Piso ${range.min}${unit}`;
+      return `Meta ${range.min}-${range.max}${unit}`;
+    }
+
+    function rangeStatus(value, range) {
+      if (!range) return "flex";
+      if (range.floor) return value >= range.min ? "ok" : "below";
+      if (value < range.min) return "below";
+      if (value > range.max) return "over";
+      return "ok";
+    }
+
     function summaryBox(label, value, range, unit) {
       const v = Math.round(value);
       if (!range) {
@@ -1318,44 +1548,360 @@
           </div>
         `;
       }
-      if (range.floor) {
-        const pct = Math.min(120, Math.round((value / range.min) * 100));
-        const status = value >= range.min ? "ok" : "below";
-        return `
-          <div class="summary-box ${status}">
-            <span class="small">${label}</span>
-            <strong>${v}${unit}</strong>
-            <span class="small">Piso ${range.min}${unit}</span>
-            <div class="progress"><span style="width:${pct}%"></span></div>
-          </div>
-        `;
+      const status = rangeStatus(value, range);
+      const target = range.floor ? range.min : range.max;
+      const pct = Math.min(120, Math.round((value / target) * 100));
+      let mainLine;
+      let subLine;
+      if (macroView === "remaining" && !range.floor) {
+        const remaining = range.max - value;
+        if (remaining >= 0) {
+          mainLine = `${Math.round(remaining)}${unit}`;
+          subLine = `te quedan · meta ${range.min}-${range.max}${unit}`;
+        } else {
+          mainLine = `+${Math.round(-remaining)}${unit}`;
+          subLine = `pasado · meta ${range.min}-${range.max}${unit}`;
+        }
+      } else {
+        mainLine = `${v}${unit}`;
+        subLine = formatRange(range, unit);
       }
-      const pct = Math.min(120, Math.round((value / range.max) * 100));
-      let status = "below";
-      if (value >= range.min && value <= range.max) status = "ok";
-      else if (value > range.max) status = "over";
       return `
         <div class="summary-box ${status}">
           <span class="small">${label}</span>
-          <strong>${v}${unit}</strong>
-          <span class="small">Meta ${range.min}-${range.max}${unit}</span>
+          <strong>${mainLine}</strong>
+          <span class="small">${subLine}</span>
           <div class="progress"><span style="width:${pct}%"></span></div>
         </div>
       `;
     }
 
+    function effectiveTargets(checkin, dateStr) {
+      const base = targets[checkin.type] || targets["Gym fuerte"];
+      const override = (getDiary().overrides || {})[dateStr] || {};
+      if (!override.kcal && !override.protein) return base;
+      const clone = JSON.parse(JSON.stringify(base));
+      ["kcal", "protein", "carbs", "fat", "fiber"].forEach(macro => {
+        if (clone[macro] && override[macro]) {
+          clone[macro] = {
+            min: clone[macro].min + override[macro],
+            max: clone[macro].max + override[macro],
+            floor: clone[macro].floor
+          };
+        }
+      });
+      return clone;
+    }
+
+    function buildHeroMessage(total, target) {
+      if (target.flexible) return { text: "Dia social. Sin meta rigida hoy.", muted: false };
+      if (total.kcal === 0) return { text: "Sin comidas cargadas todavia. Arrancá con la primera.", muted: true };
+      const kcalStatus = rangeStatus(total.kcal, target.kcal);
+      const protStatus = rangeStatus(total.protein, target.protein);
+      if (kcalStatus === "ok" && protStatus === "ok") return { text: "Vas en ritmo. Manté el plan.", muted: false };
+      if (kcalStatus === "over") return { text: "Te pasaste un poco en kcal. Cerrá el dia con proteína magra y agua.", muted: false };
+      if (protStatus === "below" && total.protein < target.protein.min * 0.6) {
+        const falta = target.protein.min - Math.round(total.protein);
+        return { text: `Faltan ~${falta} g de proteína. Sumá pollo, carne, yogur proteico o whey.`, muted: false };
+      }
+      if (kcalStatus === "below" && total.kcal < target.kcal.min * 0.5) {
+        return { text: "Aún hay margen para comer. No llegues a la noche con hambre acumulada.", muted: true };
+      }
+      return { text: "Vas en camino. Seguí.", muted: true };
+    }
+
+    function renderDailyHero() {
+      const container = $("#dailyHero");
+      if (!container) return;
+      const checkin = currentCheckin();
+      const date = currentDate();
+      const total = totalsForDate(date);
+      const target = effectiveTargets(checkin, date);
+      const flexible = target.flexible;
+      const status = flexible ? "flex" : rangeStatus(total.kcal, target.kcal);
+      const kcalValue = Math.round(total.kcal);
+      let kcalMain, kcalSub;
+      if (flexible) {
+        kcalMain = kcalValue;
+        kcalSub = "consumidas · sin meta rígida";
+      } else if (macroView === "remaining") {
+        const remaining = target.kcal.max - kcalValue;
+        if (remaining >= 0) {
+          kcalMain = remaining;
+          kcalSub = `te quedan · meta ${target.kcal.min}-${target.kcal.max}`;
+        } else {
+          kcalMain = `+${-remaining}`;
+          kcalSub = `pasado · meta ${target.kcal.min}-${target.kcal.max}`;
+        }
+      } else {
+        kcalMain = kcalValue;
+        kcalSub = `consumidas · meta ${target.kcal.min}-${target.kcal.max}`;
+      }
+      const pct = flexible ? 0 : Math.min(120, Math.round((kcalValue / target.kcal.max) * 100));
+      const msg = buildHeroMessage(total, target);
+      const override = (getDiary().overrides || {})[date];
+      const overrideTag = override && override.kcal
+        ? `<div class="small" style="color: var(--amber); font-weight: 700; margin-top: 4px">Ajuste activo: ${override.kcal > 0 ? "+" : ""}${override.kcal} kcal hoy.</div>`
+        : "";
+      container.className = `hero-card ${status}`;
+      container.innerHTML = `
+        <div class="hero-head">
+          <div class="hero-day">${dayLabel(date)} · ${checkin.type}</div>
+          <button id="toggleKcalView" class="ghost-btn ${macroView === "remaining" ? "on" : ""}">${macroView === "remaining" ? "Restante" : "Consumido"}</button>
+        </div>
+        <div class="hero-kcal">
+          <strong>${kcalMain}</strong>
+          <span class="hero-unit">kcal</span>
+        </div>
+        <div class="hero-meta small">${kcalSub}</div>
+        <div class="progress big"><span style="width:${pct}%"></span></div>
+        <div class="hero-msg ${msg.muted ? "muted" : ""}">${msg.text}</div>
+        ${overrideTag}
+      `;
+      const toggleBtn = $("#toggleKcalView");
+      if (toggleBtn) {
+        toggleBtn.addEventListener("click", () => {
+          macroView = macroView === "consumed" ? "remaining" : "consumed";
+          renderDailyHero();
+          renderDailySummary();
+        });
+      }
+    }
+
     function renderDailySummary() {
       const checkin = currentCheckin();
-      const total = totalsForDate(currentDate());
-      const target = targets[checkin.type] || targets["Gym fuerte"];
+      const date = currentDate();
+      const total = totalsForDate(date);
+      const target = effectiveTargets(checkin, date);
       const flexible = target.flexible;
       $("#dailySummary").innerHTML = [
-        summaryBox("Calorias", total.kcal, flexible ? null : target.kcal, ""),
         summaryBox("Proteina", total.protein, target.protein, " g"),
         summaryBox("Carbos", total.carbs, flexible ? null : target.carbs, " g"),
         summaryBox("Grasa", total.fat, flexible ? null : target.fat, " g"),
         summaryBox("Fibra", total.fiber, flexible ? null : target.fiber, " g")
       ].join("");
+    }
+
+    function renderDay() {
+      renderDailyHero();
+      renderDailySummary();
+      renderMealDiary();
+      renderBodyCard();
+      renderQuickPills();
+      renderAdvice();
+      renderWeekly();
+      maybeShowWeeklyReview();
+    }
+
+    function renderAdvice() {
+      const container = $("#adviceBanner");
+      if (!container) return;
+      const date = currentDate();
+      const diary = getDiary();
+      if (diary.dismissedAdvice[date]) { container.innerHTML = ""; return; }
+      if ((diary.overrides[date] || {}).source === "fatigue") {
+        container.innerHTML = "";
+        return;
+      }
+      const signal = fatigueSignal(date);
+      const advice = adviceFor(signal.severity);
+      if (!advice) { container.innerHTML = ""; return; }
+      const uniqueReasons = [...new Set(signal.reasons)].slice(0, 4);
+      container.innerHTML = `
+        <div class="advice">
+          <h3>${advice.title}</h3>
+          <p>${advice.body}</p>
+          <ul class="reasons">${uniqueReasons.map(r => `<li>${escapeHtml(r)}</li>`).join("")}</ul>
+          <p><strong>${advice.action}</strong></p>
+          <div class="row-buttons">
+            <button class="primary" data-apply-advice="${advice.kcal},${advice.protein}">Aplicar a hoy</button>
+            <button class="secondary" data-dismiss-advice>Ignorar por hoy</button>
+          </div>
+        </div>
+      `;
+      container.querySelectorAll("[data-apply-advice]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const [k, p] = btn.dataset.applyAdvice.split(",").map(Number);
+          const d = getDiary();
+          d.overrides[date] = { kcal: k, protein: p, source: "fatigue", ts: new Date().toISOString() };
+          saveDiary(d);
+          renderDay();
+        });
+      });
+      container.querySelectorAll("[data-dismiss-advice]").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const d = getDiary();
+          d.dismissedAdvice[date] = true;
+          saveDiary(d);
+          renderDay();
+        });
+      });
+    }
+
+    function renderWeekly() {
+      const container = $("#weeklyView");
+      if (!container) return;
+      const today = currentDate();
+      const diary = getDiary();
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = shiftDate(today, -i);
+        const checkin = diary.checkins[date];
+        const target = checkin ? effectiveTargets(checkin, date) : null;
+        const totals = totalsForDate(date);
+        const hasFood = diary.foods.some(f => f.date === date);
+        const complete = !!checkin && hasFood;
+        let inRange = null;
+        if (target && !target.flexible && hasFood) {
+          const kcalOk = totals.kcal >= target.kcal.min && totals.kcal <= target.kcal.max;
+          const protOk = totals.protein >= target.protein.min;
+          inRange = kcalOk && protOk;
+        }
+        days.push({ date, checkin, target, totals, hasFood, complete, inRange });
+      }
+      const loggedDays = days.filter(d => d.complete).length;
+      const evaluable = days.filter(d => d.inRange !== null);
+      const inRangeDays = evaluable.filter(d => d.inRange === true).length;
+      const sumKcal = days.reduce((s, d) => s + (d.hasFood ? d.totals.kcal : 0), 0);
+      const sumProt = days.reduce((s, d) => s + (d.hasFood ? d.totals.protein : 0), 0);
+      const daysWithFood = days.filter(d => d.hasFood).length;
+      const avgKcal = daysWithFood ? Math.round(sumKcal / daysWithFood) : 0;
+      const avgProt = daysWithFood ? Math.round(sumProt / daysWithFood) : 0;
+
+      const rows = days.map(d => {
+        const isToday = d.date === today;
+        const dateLabel = dayLabel(d.date);
+        const type = d.checkin ? d.checkin.type : "—";
+        const kcal = d.hasFood ? Math.round(d.totals.kcal) : "—";
+        const prot = d.hasFood ? Math.round(d.totals.protein) + " g" : "—";
+        let dotClass = "empty";
+        let dotTitle = "Sin datos";
+        if (d.checkin && d.checkin.type === "Social") { dotClass = "flex"; dotTitle = "Día social"; }
+        else if (d.inRange === true) { dotClass = "ok"; dotTitle = "En rango"; }
+        else if (d.inRange === false) { dotClass = "off"; dotTitle = "Fuera de rango"; }
+        return `<tr><td class="${isToday ? "today" : ""}">${dateLabel}</td><td>${escapeHtml(type)}</td><td>${kcal}</td><td>${prot}</td><td><span class="dot ${dotClass}" title="${dotTitle}"></span></td></tr>`;
+      }).join("");
+
+      const evaluableNote = evaluable.length
+        ? `<strong>${inRangeDays}</strong> de ${evaluable.length} días con meta dentro del rango`
+        : `<span class="small">Aún no hay días con meta para evaluar</span>`;
+      container.innerHTML = `
+        <h3>Semana</h3>
+        <table class="weekly">
+          <thead><tr><th>Día</th><th>Tipo</th><th>Kcal</th><th>Prot</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="weekly-foot">
+          Promedio: <strong>${avgKcal} kcal</strong> · <strong>${avgProt} g prot</strong> (sobre ${daysWithFood} ${daysWithFood === 1 ? "día" : "días"} con comidas).<br>
+          ${evaluableNote}. <strong>${loggedDays}</strong> de 7 días con check-in + comidas.
+        </div>
+      `;
+    }
+
+    function weeklyReviewData() {
+      const today = currentDate();
+      const days = [];
+      for (let i = 6; i >= 0; i--) days.push(shiftDate(today, -i));
+      const sumKcal = days.reduce((s, d) => s + totalsForDate(d).kcal, 0);
+      const daysWithFood = days.filter(d => getDiary().foods.some(f => f.date === d)).length;
+      const avgKcal = daysWithFood ? Math.round(sumKcal / daysWithFood) : 0;
+
+      const weights = getMeasurements().filter(m => m.weight);
+      let weightDelta = null;
+      let weeklyRatePct = null;
+      if (weights.length >= 2) {
+        const ys = weights.map(w => Number(w.weight));
+        const trend = computeEWMA(ys, 0.1);
+        const firstDate = weights[0].date;
+        const lastDate = weights[weights.length - 1].date;
+        const spanDays = Math.max(1, (new Date(lastDate + "T12:00:00") - new Date(firstDate + "T12:00:00")) / 86400000);
+        weightDelta = trend[trend.length - 1] - trend[0];
+        const ratePerDay = weightDelta / spanDays;
+        const weeklyKg = ratePerDay * 7;
+        weeklyRatePct = (weeklyKg / Number(weights[weights.length - 1].weight)) * 100;
+      }
+      const expenditure = weightDelta !== null && daysWithFood >= 3
+        ? Math.round(avgKcal - (weightDelta * 7700 / 7))
+        : null;
+      return { avgKcal, daysWithFood, weightDelta, weeklyRatePct, expenditure };
+    }
+
+    function shouldShowWeeklyReview() {
+      const diary = getDiary();
+      if (!diary.weeklyReview) {
+        const ckCount = Object.keys(diary.checkins).length;
+        return ckCount >= 3;
+      }
+      const last = new Date(diary.weeklyReview + "T12:00:00");
+      const today = new Date(currentDate() + "T12:00:00");
+      return (today - last) / 86400000 >= 7;
+    }
+
+    function maybeShowWeeklyReview() {
+      const container = $("#weeklyReview");
+      if (!container) return;
+      if (!shouldShowWeeklyReview()) {
+        container.style.display = "none";
+        container.innerHTML = "";
+        return;
+      }
+      container.style.display = "block";
+      const data = weeklyReviewData();
+      let rateMsg = "";
+      let rateDot = "";
+      if (data.weeklyRatePct === null) {
+        rateMsg = "Carga peso varios dias para que pueda estimar tu ritmo.";
+      } else if (data.weeklyRatePct < -1) {
+        rateMsg = "Bajaste muy rapido. Riesgo de perder musculo. Si entrenas, considera suavizar el deficit ~200 kcal.";
+        rateDot = `<span class="dot off"></span>`;
+      } else if (data.weeklyRatePct <= -0.4) {
+        rateMsg = "Bajada en zona optima (0.4-1% peso corporal por sem). Mantene el plan.";
+        rateDot = `<span class="dot ok"></span>`;
+      } else if (data.weeklyRatePct <= -0.1) {
+        rateMsg = "Bajada lenta. Si queres acelerar, recortar ~200 kcal/dia.";
+        rateDot = `<span class="dot flex"></span>`;
+      } else if (data.weeklyRatePct <= 0.3) {
+        rateMsg = "Peso estable. Si la cintura baja igual = recomposicion, vas bien. Si no, sumar deficit.";
+        rateDot = `<span class="dot flex"></span>`;
+      } else {
+        rateMsg = "Subiste. Si la idea era cut, recortar ~300 kcal/dia.";
+        rateDot = `<span class="dot off"></span>`;
+      }
+      const expLine = data.expenditure !== null
+        ? `<li>Mantenimiento estimado: <strong>~${data.expenditure} kcal/dia</strong> <span class="small">(avg intake ${data.avgKcal} kcal ajustado por cambio de peso)</span></li>`
+        : `<li>Mantenimiento: faltan datos para estimarlo</li>`;
+      const items = [
+        `<li>Promedio intake: <strong>${data.avgKcal} kcal/dia</strong> (${data.daysWithFood} dias con comidas)</li>`,
+        data.weightDelta !== null ? `<li>Cambio de peso tendencia: <strong>${data.weightDelta > 0 ? "+" : ""}${data.weightDelta.toFixed(2)} kg</strong></li>` : "",
+        data.weeklyRatePct !== null ? `<li>Ritmo: <strong>${data.weeklyRatePct.toFixed(2)}% peso corporal/sem</strong> ${rateDot}</li>` : "",
+        expLine
+      ].filter(Boolean).join("");
+      container.innerHTML = `
+        <h3>Check-in semanal</h3>
+        <p class="small">Paso una semana. Revision rapida:</p>
+        <ul class="reasons">${items}</ul>
+        <p><strong>${rateMsg}</strong></p>
+        <div class="row-buttons">
+          <button class="primary" data-mark-weekly>Marcar revisado</button>
+          <button class="secondary" data-snooze-weekly>Recordar manana</button>
+        </div>
+      `;
+      container.querySelectorAll("[data-mark-weekly]").forEach(b => {
+        b.addEventListener("click", () => {
+          const d = getDiary();
+          d.weeklyReview = currentDate();
+          saveDiary(d);
+          renderDay();
+        });
+      });
+      container.querySelectorAll("[data-snooze-weekly]").forEach(b => {
+        b.addEventListener("click", () => {
+          const d = getDiary();
+          d.weeklyReview = shiftDate(currentDate(), -6);
+          saveDiary(d);
+          renderDay();
+        });
+      });
     }
 
     function loadCheckinFields() {
@@ -1369,9 +1915,7 @@
       const measurement = (getDiary().measurements || {})[currentDate()] || {};
       $("#logWeight").value = measurement.weight ?? "";
       $("#logWaist").value = measurement.waist ?? "";
-      renderDailySummary();
-      renderMealDiary();
-      renderBodyCard();
+      renderDay();
     }
 
     function renderMealDiary() {
@@ -1412,8 +1956,7 @@
           const diary = getDiary();
           diary.foods = diary.foods.filter(item => item.id !== button.dataset.delete);
           saveDiary(diary);
-          renderDailySummary();
-          renderMealDiary();
+          renderDay();
         });
       });
       $$("[data-duplicate]").forEach(button => {
@@ -1426,8 +1969,7 @@
             id: `${Date.now()}-${Math.random().toString(16).slice(2)}`
           });
           saveDiary(diary);
-          renderDailySummary();
-          renderMealDiary();
+          renderDay();
         });
       });
     }
@@ -1636,8 +2178,7 @@
         delete diary.measurements[currentDate()];
       }
       saveDiary(diary);
-      renderDailySummary();
-      renderBodyCard();
+      renderDay();
     });
     $("#copyYesterday").addEventListener("click", () => {
       const today = currentDate();
@@ -1668,9 +2209,7 @@
         diary.presetUsage[src.name] = usage;
       });
       saveDiary(diary);
-      renderDailySummary();
-      renderMealDiary();
-      renderQuickPills();
+      renderDay();
     });
     $("#addFood").addEventListener("click", () => {
       const diary = getDiary();
@@ -1695,9 +2234,7 @@
       usage.lastUsed = new Date().toISOString();
       diary.presetUsage[name] = usage;
       saveDiary(diary);
-      renderDailySummary();
-      renderMealDiary();
-      renderQuickPills();
+      renderDay();
       $("#foodName").value = "";
       $("#foodPortion").value = "";
       $("#foodKcal").value = "";
