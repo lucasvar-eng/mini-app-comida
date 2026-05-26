@@ -583,6 +583,94 @@
 
     .weekly-foot strong { color: var(--green-dark); }
 
+    .helper {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 0;
+      margin-top: 10px;
+      background: #f9f8f3;
+      overflow: hidden;
+    }
+
+    .helper summary {
+      cursor: pointer;
+      font-weight: 800;
+      color: var(--green-dark);
+      font-size: 13px;
+      padding: 10px 14px;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .helper summary::after {
+      content: "+";
+      color: var(--green);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .helper[open] summary::after { content: "−"; }
+
+    .helper-body {
+      padding: 0 14px 12px;
+    }
+
+    .helper-body p.small { margin-bottom: 8px; }
+
+    .ingredient-row {
+      display: grid;
+      grid-template-columns: 1fr 90px 40px;
+      gap: 6px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+
+    .ingredient-row select,
+    .ingredient-row input { min-height: 36px; }
+
+    .ingredient-row button {
+      background: #fff;
+      color: var(--red);
+      border-color: #efc6bf;
+      min-height: 36px;
+      padding: 4px 8px;
+    }
+
+    .ingredient-totals {
+      margin: 10px 0 8px;
+      font-size: 13px;
+      color: var(--ink);
+      background: var(--soft);
+      padding: 9px 10px;
+      border-radius: 6px;
+      line-height: 1.5;
+    }
+
+    .ingredient-totals strong { color: var(--green-dark); }
+
+    .estimate-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      align-items: end;
+      margin-bottom: 8px;
+    }
+
+    .portion-pills {
+      display: flex;
+      gap: 6px;
+      margin: 8px 0 4px;
+    }
+
+    .portion-pills .pill { flex: 1; }
+
+    @media (max-width: 560px) {
+      .ingredient-row { grid-template-columns: 1fr 80px 38px; }
+      .estimate-row { grid-template-columns: 1fr; }
+    }
+
     .entry-title {
       font-weight: 800;
       margin-bottom: 2px;
@@ -742,7 +830,7 @@
               <option>Menos de 2 L</option>
             </select>
           </label>
-          <label>Sueño
+          <label>Cuanto dormiste anoche
             <select id="logSleep">
               <option>7 h o mas</option>
               <option>6-7 h</option>
@@ -783,6 +871,36 @@
         <h3>Agregar comida</h3>
         <div class="small" style="margin: 2px 0 8px">Rapidas: favoritas y recientes. Tap pill = cargar.</div>
         <div id="quickPills" class="pillrow"></div>
+
+        <details class="helper" id="ingredientHelper">
+          <summary>Calcular por ingredientes (para comidas que cocinaste)</summary>
+          <div class="helper-body">
+            <p class="small">Sumá los ingredientes que usaste con sus gramos. La app calcula kcal y macros y los carga al form de abajo.</p>
+            <div id="ingredientRows"></div>
+            <button class="secondary" id="addIngredientRow" style="width: auto; padding: 6px 14px; margin-top: 4px">+ Agregar ingrediente</button>
+            <div class="ingredient-totals" id="ingredientTotals">Totales: 0 kcal · 0 g prot · 0 g carbos · 0 g grasa · 0 g fibra</div>
+            <button id="applyIngredients">Volcar al form de abajo</button>
+          </div>
+        </details>
+
+        <details class="helper" id="estimateHelper">
+          <summary>Estimar por tipo + porción (cuando no sabés los números)</summary>
+          <div class="helper-body">
+            <p class="small">Elegí el tipo de comida más parecido y la porción visual. Es estimación, ajustá a mano si querés.</p>
+            <label style="margin-bottom: 6px">Tipo de comida
+              <select id="estimateType"></select>
+            </label>
+            <div class="small" style="font-weight: 800; margin-bottom: 4px">Porción</div>
+            <div class="portion-pills" id="portionPills">
+              <button type="button" class="pill" data-portion="0.7">Chica</button>
+              <button type="button" class="pill active" data-portion="1">Media</button>
+              <button type="button" class="pill" data-portion="1.4">Grande</button>
+            </div>
+            <div class="ingredient-totals" id="estimateResult">Estimacion: 0 kcal · 0 g prot · 0 g carbos · 0 g grasa · 0 g fibra</div>
+            <button id="applyEstimate">Volcar al form de abajo</button>
+          </div>
+        </details>
+
         <div class="log-form">
           <label>Horario
             <select id="foodMeal"></select>
@@ -1383,6 +1501,75 @@
       const remaining = Number(kcal || 0) - Number(protein || 0) * 4 - Number(carbs || 0) * 4;
       return Math.max(0, Math.round(remaining / 9));
     }
+
+    // [nombre, kcal, prot, carbs, fat, fiber] por 100 g
+    const ingredients = [
+      ["Carne molida magra (90/10) cruda", 199, 21, 0, 12, 0],
+      ["Carne molida (80/20) cruda", 254, 20, 0, 20, 0],
+      ["Pollo pechuga cruda", 110, 23, 0, 1.2, 0],
+      ["Pollo muslo/pata cruda", 180, 18, 0, 11, 0],
+      ["Pollo cocido al horno", 165, 31, 0, 3.6, 0],
+      ["Cerdo magro crudo (paleta/bondiola)", 145, 21, 0, 7, 0],
+      ["Bife/lomo crudo", 215, 22, 0, 14, 0],
+      ["Costeleta cerdo cruda", 200, 22, 0, 12, 0],
+      ["Medallon hamburguesa crudo", 250, 17, 0, 20, 0],
+      ["Jamon cocido", 165, 18, 1, 10, 0],
+      ["Queso cremoso (cuartirolo)", 290, 18, 2, 24, 0],
+      ["Queso untable", 230, 8, 4, 22, 0],
+      ["Queso rallado", 390, 35, 3, 27, 0],
+      ["Huevo entero", 155, 13, 1, 11, 0],
+      ["Leche entera", 60, 3.2, 4.6, 3.3, 0],
+      ["Leche descremada", 35, 3.4, 5, 0.1, 0],
+      ["Yogur natural", 60, 4.3, 6, 1.5, 0],
+      ["Yogur alto en prot (Skyr/proteico)", 60, 10, 4, 0, 0],
+      ["Whey protein", 380, 80, 7, 6, 0],
+      ["Arroz crudo", 365, 7, 80, 0.6, 1.3],
+      ["Arroz cocido", 130, 2.7, 28, 0.3, 0.4],
+      ["Fideos secos", 370, 13, 75, 1.5, 3],
+      ["Fideos cocidos", 158, 5.8, 31, 0.9, 1.8],
+      ["Papa cruda", 77, 2, 17, 0.1, 2.2],
+      ["Papa cocida/al horno", 87, 1.9, 20, 0.1, 1.8],
+      ["Pan tipo lacteado", 280, 9, 50, 4, 2.5],
+      ["Pan tipo rapidita/wrap", 290, 9, 53, 4.5, 3],
+      ["Pan tipo frances/baguette", 270, 9, 53, 3, 2.5],
+      ["Granola simple", 470, 10, 65, 18, 7],
+      ["Avena cruda", 380, 13, 67, 7, 10],
+      ["Banana", 89, 1.1, 23, 0.3, 2.6],
+      ["Manzana", 52, 0.3, 14, 0.2, 2.4],
+      ["Tomate", 18, 0.9, 3.9, 0.2, 1.2],
+      ["Lechuga", 15, 1.4, 2.9, 0.2, 1.3],
+      ["Cebolla", 40, 1.1, 9.3, 0.1, 1.7],
+      ["Pimiento", 26, 1, 6, 0.3, 2.1],
+      ["Tomate triturado", 30, 1.6, 7, 0.2, 1.5],
+      ["Aceite oliva/girasol", 884, 0, 0, 100, 0],
+      ["Mayonesa", 680, 1, 1, 75, 0],
+      ["Mayonesa light", 230, 0.5, 6, 25, 0],
+      ["Ketchup", 100, 1, 26, 0.1, 0.3],
+      ["Mostaza", 65, 4, 5, 4, 4],
+      ["Manteca", 720, 0.8, 0.1, 81, 0]
+    ];
+
+    // [nombre tipo, kcal base, prot, carbs, fat, fiber] para porcion media (factor 1.0)
+    const estimates = [
+      ["Bolognesa con fideos casera", 780, 45, 90, 22, 7],
+      ["Pollo al horno con papa", 720, 60, 70, 18, 8],
+      ["Pollo con arroz", 720, 60, 85, 12, 4],
+      ["Bife con papa", 800, 55, 60, 25, 7],
+      ["Hamburguesa casera con pan + papas", 950, 55, 75, 40, 5],
+      ["Hamburguesa al plato (sin pan, con papa)", 750, 55, 45, 35, 6],
+      ["Tacos de carne con queso", 850, 55, 65, 35, 6],
+      ["Pizza muzzarella (2-3 porciones)", 850, 35, 90, 32, 4],
+      ["Sandwich jamon y queso", 500, 28, 45, 22, 3],
+      ["Tostado completo (3 panes)", 650, 38, 60, 25, 4],
+      ["Wrap de pollo con queso", 650, 50, 50, 22, 5],
+      ["Pasta con salsa de tomate y queso", 700, 25, 100, 18, 6],
+      ["Pasta con crema y pollo", 900, 55, 90, 30, 4],
+      ["Empanadas (4 unidades)", 950, 40, 80, 45, 4],
+      ["Asado mixto (250g carne + ensalada)", 850, 65, 25, 50, 4],
+      ["Yogur con granola y fruta", 400, 18, 60, 10, 5],
+      ["Licuado proteico (leche + banana + avena)", 550, 30, 75, 12, 6],
+      ["Cena liviana (pollo + ensalada)", 450, 50, 15, 18, 4]
+    ];
 
     const foodPresets = [
       { name: "Personalizada", portion: "", kcal: "", protein: "", carbs: "", fat: "", fiber: "", note: "" },
@@ -1994,6 +2181,137 @@
       $("#foodPreset").addEventListener("change", fillFoodPreset);
       fillFoodPreset();
       renderQuickPills();
+      setupIngredientHelper();
+      setupEstimateHelper();
+    }
+
+    function ingredientOptions(selected) {
+      const opts = ['<option value="">-- elegir ingrediente --</option>'];
+      ingredients.forEach(ing => {
+        const sel = ing[0] === selected ? " selected" : "";
+        opts.push(`<option value="${escapeHtml(ing[0])}"${sel}>${escapeHtml(ing[0])}</option>`);
+      });
+      return opts.join("");
+    }
+
+    function readIngredientRows() {
+      return Array.from(document.querySelectorAll("#ingredientRows .ingredient-row")).map(row => {
+        const name = row.querySelector("select").value;
+        const grams = Number(row.querySelector("input").value) || 0;
+        return { name, grams };
+      });
+    }
+
+    function computeIngredientTotals() {
+      const rows = readIngredientRows();
+      let kcal = 0, protein = 0, carbs = 0, fat = 0, fiber = 0;
+      rows.forEach(({ name, grams }) => {
+        if (!name || !grams) return;
+        const data = ingredients.find(i => i[0] === name);
+        if (!data) return;
+        const factor = grams / 100;
+        kcal    += data[1] * factor;
+        protein += data[2] * factor;
+        carbs   += data[3] * factor;
+        fat     += data[4] * factor;
+        fiber   += data[5] * factor;
+      });
+      return {
+        kcal: Math.round(kcal),
+        protein: Math.round(protein * 10) / 10,
+        carbs: Math.round(carbs * 10) / 10,
+        fat: Math.round(fat * 10) / 10,
+        fiber: Math.round(fiber * 10) / 10
+      };
+    }
+
+    function refreshIngredientTotals() {
+      const t = computeIngredientTotals();
+      $("#ingredientTotals").innerHTML = `Totales: <strong>${t.kcal} kcal</strong> · <strong>${t.protein} g prot</strong> · ${t.carbs} g carbos · ${t.fat} g grasa · ${t.fiber} g fibra`;
+    }
+
+    function addIngredientRow(selected = "", grams = "") {
+      const row = document.createElement("div");
+      row.className = "ingredient-row";
+      row.innerHTML = `
+        <select>${ingredientOptions(selected)}</select>
+        <input type="number" inputmode="decimal" placeholder="gramos" value="${grams}">
+        <button type="button" aria-label="Eliminar">×</button>
+      `;
+      $("#ingredientRows").appendChild(row);
+      row.querySelector("select").addEventListener("change", refreshIngredientTotals);
+      row.querySelector("input").addEventListener("input", refreshIngredientTotals);
+      row.querySelector("button").addEventListener("click", () => {
+        row.remove();
+        refreshIngredientTotals();
+      });
+      refreshIngredientTotals();
+    }
+
+    function setupIngredientHelper() {
+      $("#addIngredientRow").addEventListener("click", () => addIngredientRow());
+      $("#applyIngredients").addEventListener("click", () => {
+        const t = computeIngredientTotals();
+        if (t.kcal === 0) {
+          alert("Agregá al menos un ingrediente con gramos antes de volcar.");
+          return;
+        }
+        $("#foodKcal").value    = t.kcal;
+        $("#foodProtein").value = t.protein;
+        $("#foodCarbs").value   = t.carbs;
+        $("#foodFat").value     = t.fat;
+        $("#foodFiber").value   = t.fiber;
+        $("#ingredientHelper").open = false;
+        $("#foodName").focus();
+      });
+    }
+
+    let estimatePortion = 1;
+
+    function refreshEstimateResult() {
+      const name = $("#estimateType").value;
+      const data = estimates.find(e => e[0] === name);
+      if (!data) {
+        $("#estimateResult").innerHTML = "Estimacion: 0 kcal · 0 g prot · 0 g carbos · 0 g grasa · 0 g fibra";
+        return;
+      }
+      const f = estimatePortion;
+      const kcal = Math.round(data[1] * f);
+      const prot = Math.round(data[2] * f);
+      const carbs = Math.round(data[3] * f);
+      const fat = Math.round(data[4] * f);
+      const fiber = Math.round(data[5] * f);
+      $("#estimateResult").innerHTML = `Estimacion: <strong>${kcal} kcal</strong> · <strong>${prot} g prot</strong> · ${carbs} g carbos · ${fat} g grasa · ${fiber} g fibra`;
+    }
+
+    function setupEstimateHelper() {
+      $("#estimateType").innerHTML = estimates.map(e => `<option value="${escapeHtml(e[0])}">${escapeHtml(e[0])}</option>`).join("");
+      $("#estimateType").addEventListener("change", refreshEstimateResult);
+      $$("#portionPills .pill").forEach(btn => {
+        btn.addEventListener("click", () => {
+          estimatePortion = Number(btn.dataset.portion);
+          $$("#portionPills .pill").forEach(b => b.classList.toggle("active", b === btn));
+          refreshEstimateResult();
+        });
+      });
+      $("#applyEstimate").addEventListener("click", () => {
+        const name = $("#estimateType").value;
+        const data = estimates.find(e => e[0] === name);
+        if (!data) return;
+        const f = estimatePortion;
+        $("#foodKcal").value    = Math.round(data[1] * f);
+        $("#foodProtein").value = Math.round(data[2] * f);
+        $("#foodCarbs").value   = Math.round(data[3] * f);
+        $("#foodFat").value     = Math.round(data[4] * f);
+        $("#foodFiber").value   = Math.round(data[5] * f);
+        if (!$("#foodName").value) {
+          const portionLabel = f < 1 ? "chica" : (f > 1 ? "grande" : "media");
+          $("#foodName").value = `${name} (porcion ${portionLabel})`;
+        }
+        $("#estimateHelper").open = false;
+        $("#foodName").focus();
+      });
+      refreshEstimateResult();
     }
 
     function usePreset(name) {
