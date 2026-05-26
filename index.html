@@ -1,0 +1,1756 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1f3a32">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Comidas Lucas">
+  <title>Comidas Lucas</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <style>
+    :root {
+      --bg: #f6f4ee;
+      --ink: #18211f;
+      --muted: #69716f;
+      --panel: #fffefa;
+      --line: #ddd8cb;
+      --green: #1f6b54;
+      --green-dark: #173a32;
+      --amber: #a66a16;
+      --red: #a74435;
+      --blue: #285b76;
+      --soft: #edf3ee;
+      --shadow: 0 10px 24px rgba(28, 36, 31, .08);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.35;
+    }
+
+    header {
+      background: var(--green-dark);
+      color: #fff;
+      padding: max(18px, env(safe-area-inset-top)) 16px 16px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, .16);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    h1, h2, h3 { margin: 0; line-height: 1.12; letter-spacing: 0; }
+    h1 { font-size: 23px; }
+    h2 { font-size: 22px; margin: 4px 0 12px; }
+    h3 { font-size: 17px; margin-bottom: 8px; }
+    p { margin: 0 0 10px; }
+
+    .subtitle {
+      color: #d8e8e1;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .install {
+      border: 1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.12);
+      color: #fff;
+      border-radius: 8px;
+      padding: 9px 10px;
+      font-weight: 800;
+      min-height: 38px;
+    }
+
+    main {
+      width: min(1080px, calc(100vw - 24px));
+      margin: 0 auto;
+      padding: 16px 0 86px;
+    }
+
+    .tabs {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 30;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      padding: 8px 10px max(8px, env(safe-area-inset-bottom));
+      background: rgba(246,244,238,.96);
+      border-top: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+
+    .tab {
+      border: 1px solid transparent;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--muted);
+      padding: 8px 4px;
+      font-size: 12px;
+      font-weight: 800;
+      min-height: 46px;
+    }
+
+    .tab.active {
+      background: var(--green);
+      color: #fff;
+    }
+
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .grid.two { grid-template-columns: repeat(2, 1fr); }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      box-shadow: var(--shadow);
+    }
+
+    .metric strong {
+      display: block;
+      color: var(--green);
+      font-size: 22px;
+      margin-bottom: 3px;
+    }
+
+    .small { color: var(--muted); font-size: 13px; }
+
+    .pillrow {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 12px;
+    }
+
+    .pill {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      border-radius: 999px;
+      min-height: 34px;
+      padding: 7px 11px;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .pill.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .fav-toggle {
+      display: inline-block;
+      margin-right: 6px;
+      color: #c9b86a;
+      font-size: 14px;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .fav-toggle.on { color: var(--amber); }
+
+    .recipe-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .recipe-card {
+      display: grid;
+      gap: 10px;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: var(--soft);
+      color: var(--green);
+    }
+
+    .tag.amber { background: #fff0cf; color: var(--amber); }
+    .tag.red { background: #ffe1db; color: var(--red); }
+    .tag.blue { background: #e0eef5; color: var(--blue); }
+
+    .ingredients {
+      margin: 0;
+      padding-left: 18px;
+      color: #323b38;
+      font-size: 14px;
+    }
+
+    .ingredients li { margin-bottom: 4px; }
+
+    .macros {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+
+    .macros div {
+      background: #f0f3ef;
+      border-radius: 6px;
+      padding: 7px 6px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .macros strong {
+      display: block;
+      color: var(--ink);
+      font-size: 14px;
+      margin-bottom: 2px;
+    }
+
+    .builder {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      align-items: end;
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    select, input, textarea, button {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      min-height: 40px;
+      padding: 9px 10px;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 66px;
+      resize: vertical;
+    }
+
+    button {
+      cursor: pointer;
+      background: var(--green);
+      color: #fff;
+      border-color: var(--green);
+      font-weight: 900;
+    }
+
+    button.secondary {
+      background: #fff;
+      color: var(--ink);
+      border-color: var(--line);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 8px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+
+    th, td {
+      padding: 9px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    th {
+      background: #e9efe9;
+      color: #33413d;
+      font-size: 12px;
+    }
+
+    tr:last-child td { border-bottom: 0; }
+
+    .log-form {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      align-items: end;
+    }
+
+    .daily-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .summary-box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .summary-box strong {
+      display: block;
+      font-size: 20px;
+      color: var(--green);
+      margin-bottom: 2px;
+    }
+
+    .progress {
+      height: 8px;
+      background: #e6e3d8;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--green);
+      border-radius: inherit;
+    }
+
+    .summary-box.over .progress span,
+    .summary-box.below .progress span { background: var(--amber); }
+    .summary-box.flex .progress span { background: transparent; }
+    .summary-box.flex strong { color: var(--ink); }
+
+    .meal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .meal-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .meal-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .entry {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 8px;
+      padding: 9px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .entry:first-of-type { border-top: 0; }
+
+    .entry button {
+      min-height: 32px;
+      padding: 4px 8px;
+      background: #fff;
+      color: var(--red);
+      border-color: #efc6bf;
+    }
+
+    .entry-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: stretch;
+    }
+
+    .entry button[data-duplicate] {
+      color: var(--green);
+      border-color: #cfe2d9;
+    }
+
+    .row-buttons {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    @media (max-width: 560px) {
+      .row-buttons { grid-template-columns: 1fr; }
+    }
+
+    .sparkline {
+      width: 100%;
+      height: 100px;
+      background: #f0f3ef;
+      border-radius: 6px;
+      margin-top: 8px;
+      display: block;
+    }
+
+    .entry-title {
+      font-weight: 800;
+      margin-bottom: 2px;
+    }
+
+    .notice {
+      background: #fff8e5;
+      border: 1px solid #ead7a2;
+      color: #443719;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .stack { display: grid; gap: 12px; }
+
+    @media (max-width: 860px) {
+      .grid, .grid.two, .recipe-list, .meal-grid { grid-template-columns: 1fr; }
+      .builder, .log-form { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      h1 { font-size: 20px; }
+      main { width: min(100vw - 18px, 1080px); }
+      .builder, .log-form { grid-template-columns: 1fr; }
+      .macros { grid-template-columns: 1fr 1fr; }
+      .topbar { grid-template-columns: 1fr; }
+      .install { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>Comidas Lucas</h1>
+        <div class="subtitle">Ideas, gustos y registro simple para bajar grasa sin comer siempre lo mismo.</div>
+      </div>
+      <button class="install" id="installBtn" hidden>Instalar</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="screen active" id="home">
+      <h2>Hoy, lo importante</h2>
+      <div class="grid">
+        <div class="card metric">
+          <strong>190-210 g</strong>
+          <span>Proteina objetivo. Pollo, carne, cerdo, leche proteica, jamon y queso medido.</span>
+        </div>
+        <div class="card metric">
+          <strong>3-3.5 L</strong>
+          <span>Agua minima practica. Subir si hay calor, futsal o mucho sudor.</span>
+        </div>
+        <div class="card metric">
+          <strong>6.5 h primero</strong>
+          <span>Despues buscar 7-8 h. Dormir poco dispara hambre y antojos.</span>
+        </div>
+      </div>
+
+      <div class="notice" style="margin-top:12px">
+        Tu plan no necesita perfeccion. Necesita comida lista, proteina alta, gustos medidos y volver rapido al eje despues de una salida.
+      </div>
+
+      <div class="card">
+        <h3>Constructor rapido</h3>
+        <p class="small">Elegis base y te arma una idea. Sirve para variar sin inventar cada vez.</p>
+        <div class="builder">
+          <label>Proteina
+            <select id="proteinPick">
+              <option>pollo</option>
+              <option>carne molida</option>
+              <option>bife/costeleta</option>
+              <option>cerdo</option>
+              <option>jamon y queso</option>
+              <option>hamburguesa casera</option>
+            </select>
+          </label>
+          <label>Carbo
+            <select id="carbPick">
+              <option>papa</option>
+              <option>arroz</option>
+              <option>fideos</option>
+              <option>rapiditas</option>
+              <option>pan</option>
+            </select>
+          </label>
+          <label>Verdura
+            <select id="vegPick">
+              <option>tomate y lechuga</option>
+              <option>cebolla y pimiento</option>
+              <option>tomate triturado</option>
+              <option>mix de todo</option>
+            </select>
+          </label>
+          <label>Formato
+            <select id="formatPick">
+              <option>plato</option>
+              <option>wrap</option>
+              <option>bowl</option>
+              <option>sandwich</option>
+              <option>salteado</option>
+            </select>
+          </label>
+          <button id="buildBtn">Armar idea</button>
+        </div>
+        <div id="builtIdea" class="notice" style="margin-top:12px">Elegí opciones y tocá “Armar idea”.</div>
+      </div>
+    </section>
+
+    <section class="screen" id="ideas">
+      <h2>Ideas de comidas</h2>
+      <div class="notice">Ahora la idea es variar por familia: mismo pollo/carne/papa/arroz, pero con formato y sabor distinto. Busca por ingrediente, situacion o antojo.</div>
+      <label style="margin-bottom:12px">Buscar receta
+        <input id="recipeSearch" type="search" placeholder="Ej: pollo, papa, wrap, pizza, merienda, descanso">
+      </label>
+      <div class="pillrow" id="filters"></div>
+      <p class="small" id="recipeCount"></p>
+      <div class="recipe-list" id="recipeList"></div>
+    </section>
+
+    <section class="screen" id="treats">
+      <h2>Gustos y porciones</h2>
+      <div class="notice">Usa esto como educacion: un gusto chico casi siempre entra; uno medio pide ordenar el dia; uno grande es dia social.</div>
+      <table>
+        <thead>
+          <tr><th>Comida</th><th>Porcion</th><th>Kcal</th><th>Prot</th><th>Carbos</th><th>Fibra</th><th>Nivel</th></tr>
+        </thead>
+        <tbody id="treatTable"></tbody>
+      </table>
+    </section>
+
+    <section class="screen" id="log">
+      <h2>Registro diario</h2>
+      <div class="notice">Check-in una vez por dia. Las comidas se cargan por horario, como diario: primera comida, almuerzo, merienda, pre-entreno, cena/post y social.</div>
+
+      <div class="daily-summary" id="dailySummary"></div>
+
+      <div class="card">
+        <h3>Check-in del dia</h3>
+        <div class="log-form">
+          <label>Fecha <input type="date" id="logDate"></label>
+          <label>Dia
+            <select id="logType">
+              <option>Gym fuerte</option>
+              <option>Futsal/partido</option>
+              <option>Descanso</option>
+              <option>Social</option>
+            </select>
+          </label>
+          <label>Agua
+            <select id="logWater">
+              <option>3 L o mas</option>
+              <option>2-3 L</option>
+              <option>Menos de 2 L</option>
+            </select>
+          </label>
+          <label>Sueño
+            <select id="logSleep">
+              <option>7 h o mas</option>
+              <option>6-7 h</option>
+              <option>Menos de 6 h</option>
+            </select>
+          </label>
+          <label>Energia
+            <select id="logEnergy">
+              <option>Bien</option>
+              <option>Media</option>
+              <option>Baja</option>
+            </select>
+          </label>
+          <label>Hambre/ansiedad
+            <select id="logHunger">
+              <option>Controlada</option>
+              <option>Media</option>
+              <option>Alta</option>
+            </select>
+          </label>
+          <label>Peso kg <input id="logWeight" type="number" step="0.1" inputmode="decimal" placeholder="opcional, en ayunas"></label>
+          <label>Cintura cm <input id="logWaist" type="number" step="0.5" inputmode="decimal" placeholder="opcional, semanal"></label>
+          <label style="grid-column: 1 / -1">Nota del dia <textarea id="logNote" placeholder="Ej: dormi mal, partido fuerte, ansiedad tarde"></textarea></label>
+          <div class="row-buttons">
+            <button id="saveCheckin">Guardar check-in</button>
+            <button id="copyYesterday" class="secondary">Copiar comidas de ayer</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:12px" id="bodyCard">
+        <h3>Cuerpo y tendencia</h3>
+        <div id="bodySummary" class="small">Cargá tu peso en el check-in para ver la tendencia.</div>
+        <svg id="weightChart" class="sparkline" viewBox="0 0 360 100" preserveAspectRatio="none" aria-hidden="true"></svg>
+      </div>
+
+      <div class="card" style="margin-top:12px">
+        <h3>Agregar comida</h3>
+        <div class="small" style="margin: 2px 0 8px">Rapidas: favoritas y recientes. Tap pill = cargar.</div>
+        <div id="quickPills" class="pillrow"></div>
+        <div class="log-form">
+          <label>Horario
+            <select id="foodMeal"></select>
+          </label>
+          <label>Comida
+            <select id="foodPreset"></select>
+          </label>
+          <label>Nombre
+            <input id="foodName" placeholder="Ej: pollo + papa">
+          </label>
+          <label>Porcion
+            <input id="foodPortion" placeholder="Ej: 250 g + 400 g">
+          </label>
+          <label>Kcal
+            <input id="foodKcal" type="number" inputmode="numeric">
+          </label>
+          <label>Proteina g
+            <input id="foodProtein" type="number" inputmode="decimal">
+          </label>
+          <label>Carbos g
+            <input id="foodCarbs" type="number" inputmode="decimal">
+          </label>
+          <label>Grasa g
+            <input id="foodFat" type="number" inputmode="decimal" placeholder="auto si vacio">
+          </label>
+          <label>Fibra g
+            <input id="foodFiber" type="number" inputmode="decimal">
+          </label>
+          <label>Nota
+            <textarea id="foodNote" placeholder="Ej: post entreno, con queso, porcion grande"></textarea>
+          </label>
+          <button id="addFood">Agregar comida</button>
+        </div>
+      </div>
+
+      <div class="meal-grid" id="mealDiary"></div>
+
+      <div class="card" style="margin-top:12px">
+        <div class="log-form">
+          <button class="secondary" id="exportLog">Exportar registros</button>
+          <button class="secondary" id="importLog">Importar registros</button>
+          <button class="secondary" id="clearLog">Borrar todo</button>
+          <input type="file" id="importFile" accept="application/json" hidden>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <nav class="tabs" aria-label="Secciones">
+    <button class="tab active" data-screen="home">Inicio</button>
+    <button class="tab" data-screen="ideas">Ideas</button>
+    <button class="tab" data-screen="treats">Gustos</button>
+    <button class="tab" data-screen="log">Registro</button>
+  </nav>
+
+  <script>
+    const recipes = [
+      {
+        title: "Pollo al horno con papa y ensalada",
+        tags: ["gym", "partido", "meal prep"],
+        ingredients: ["250 g pollo cocido", "400-500 g papa", "tomate + lechuga", "10 g aceite o mostaza"],
+        macros: ["650-850 kcal", "55-70 g prot", "70-100 g carbos", "8-12 g fibra"],
+        note: "Base fuerte para entrenar. En descanso baja papa a 300 g."
+      },
+      {
+        title: "Pollo salteado con arroz",
+        tags: ["gym", "partido", "rapida"],
+        ingredients: ["250 g pollo", "250-320 g arroz cocido", "cebolla + pimiento", "ketchup o mostaza medidos"],
+        macros: ["650-900 kcal", "55-75 g prot", "70-105 g carbos", "4-7 g fibra"],
+        note: "Muy buena para post entreno o para dejar lista."
+      },
+      {
+        title: "Wrap de pollo cremoso",
+        tags: ["partido", "rapida", "descanso"],
+        ingredients: ["1-2 rapiditas light", "220-250 g pollo", "20-30 g queso untable", "tomate, lechuga o pimiento"],
+        macros: ["500-850 kcal", "50-75 g prot", "35-75 g carbos", "4-9 g fibra"],
+        note: "Usa 1 rapidita en descanso, 2 en dia de entreno."
+      },
+      {
+        title: "Tacos de carne y pimiento",
+        tags: ["gym", "partido", "gusto controlado"],
+        ingredients: ["2 rapiditas", "220 g carne molida o bife cortado", "cebolla + pimiento", "30 g queso"],
+        macros: ["700-950 kcal", "50-70 g prot", "50-80 g carbos", "5-9 g fibra"],
+        note: "Sabor de comida chatarra, pero controlado."
+      },
+      {
+        title: "Bolognesa clasica",
+        tags: ["gym", "meal prep"],
+        ingredients: ["100 g fideos secos", "200 g carne molida", "tomate triturado", "cebolla, pimiento, laurel"],
+        macros: ["750-950 kcal", "45-65 g prot", "85-110 g carbos", "5-9 g fibra"],
+        note: "En descanso usa 80 g fideos y 220 g carne."
+      },
+      {
+        title: "Bowl bolognesa con arroz",
+        tags: ["rapida", "meal prep", "partido"],
+        ingredients: ["250 g arroz cocido", "200 g bolognesa con carne", "pimiento + cebolla", "15 g queso"],
+        macros: ["700-900 kcal", "45-60 g prot", "80-105 g carbos", "4-8 g fibra"],
+        note: "Misma salsa, otra comida. Evita aburrirte."
+      },
+      {
+        title: "Pastel de papa simple",
+        tags: ["meal prep", "descanso", "gusto controlado"],
+        ingredients: ["250 g carne molida cocida", "350-450 g papa pisada", "tomate triturado", "20-30 g queso arriba"],
+        macros: ["750-1050 kcal", "55-75 g prot", "75-105 g carbos", "7-12 g fibra"],
+        note: "Sin huevo. Queda bien para freezar en porciones."
+      },
+      {
+        title: "Cerdo a la mostaza con papa",
+        tags: ["descanso", "gym"],
+        ingredients: ["220-260 g cerdo", "300-500 g papa", "cebolla salteada", "mostaza"],
+        macros: ["650-950 kcal", "45-65 g prot", "55-95 g carbos", "6-10 g fibra"],
+        note: "Recorta aceite si el corte tiene mas grasa."
+      },
+      {
+        title: "Bife con papas aplastadas",
+        tags: ["descanso", "gym"],
+        ingredients: ["220-280 g bife/costeleta", "300-500 g papa", "tomate + lechuga", "10 g aceite"],
+        macros: ["750-1050 kcal", "50-75 g prot", "55-95 g carbos", "7-12 g fibra"],
+        note: "Simple, saciante y facil de medir."
+      },
+      {
+        title: "Hamburguesa casera completa",
+        tags: ["gusto controlado", "partido"],
+        ingredients: ["1 pan", "2 medallones o 220 g carne", "30 g queso", "tomate + lechuga", "papas al horno opcionales"],
+        macros: ["750-1200 kcal", "50-80 g prot", "45-115 g carbos", "4-10 g fibra"],
+        note: "Si agregas papas, no sumes otro carbo grande."
+      },
+      {
+        title: "Hamburguesa al plato",
+        tags: ["descanso", "gusto controlado"],
+        ingredients: ["2 medallones", "30 g queso", "tomate + lechuga + cebolla", "300 g papa o sin pan"],
+        macros: ["650-950 kcal", "50-75 g prot", "35-75 g carbos", "6-11 g fibra"],
+        note: "Version descanso: sin pan y con papa medida."
+      },
+      {
+        title: "Pizza de rapidita",
+        tags: ["rapida", "gusto controlado"],
+        ingredients: ["1-2 rapiditas", "tomate triturado", "40-60 g queso", "jamon o pollo arriba", "pimiento/cebolla"],
+        macros: ["450-850 kcal", "30-60 g prot", "35-75 g carbos", "4-9 g fibra"],
+        note: "Soluciona antojo de pizza mejor que pedir delivery."
+      },
+      {
+        title: "Tostado potente",
+        tags: ["merienda", "rapida"],
+        ingredients: ["2-3 panes lacteados", "100 g jamon", "30 g queso", "tomate", "cafe o mate"],
+        macros: ["450-700 kcal", "30-45 g prot", "45-80 g carbos", "3-6 g fibra"],
+        note: "Mejor que panificacion sola para controlar hambre."
+      },
+      {
+        title: "Sandwich frio de pollo",
+        tags: ["merienda", "rapida", "descanso"],
+        ingredients: ["2 panes", "180-220 g pollo frio", "queso untable", "tomate + lechuga"],
+        macros: ["500-750 kcal", "45-70 g prot", "45-75 g carbos", "4-8 g fibra"],
+        note: "Ideal para cortar ansiedad de tarde."
+      },
+      {
+        title: "Fideos con pollo y crema medida",
+        tags: ["gusto controlado", "gym"],
+        ingredients: ["90-110 g fideos secos", "220 g pollo", "40-60 g crema", "pimiento + cebolla"],
+        macros: ["800-1100 kcal", "55-75 g prot", "80-115 g carbos", "4-8 g fibra"],
+        note: "Rico y pesado: no sumar queso libre."
+      },
+      {
+        title: "Arroz cremoso con queso",
+        tags: ["rapida", "partido"],
+        ingredients: ["280 g arroz cocido", "220 g pollo/carne", "20-30 g queso", "tomate triturado"],
+        macros: ["700-950 kcal", "50-70 g prot", "80-105 g carbos", "3-7 g fibra"],
+        note: "Tipo risotto simple, sin complicarte."
+      },
+      {
+        title: "Merienda proteica con gusto chico",
+        tags: ["merienda", "gusto controlado"],
+        ingredients: ["500 ml leche proteica", "1 banana o manzana", "30 g Don Satur o 4 anillos de coco"],
+        macros: ["450-700 kcal", "25-45 g prot", "60-95 g carbos", "3-8 g fibra"],
+        note: "La clave es medir el gusto antes de empezar."
+      },
+      {
+        title: "Cena liviana post salida",
+        tags: ["descanso", "rapida"],
+        ingredients: ["250 g pollo/carne", "tomate + lechuga", "1 rapidita o 200 g papa", "mostaza"],
+        macros: ["500-750 kcal", "55-75 g prot", "25-60 g carbos", "4-9 g fibra"],
+        note: "Para volver al eje despues de un dia social."
+      }
+    ];
+
+    const treats = [
+      ["Pizza muzzarella", "2 porciones", "560-760", "24-36 g", "70-100 g", "2-6 g", "Medio"],
+      ["Pizza especial", "2 porciones", "700-1000", "25-40 g", "70-100 g", "2-5 g", "Grande"],
+      ["Big Mac", "1 unidad", "580", "25 g", "45 g", "3 g", "Medio"],
+      ["Whopper", "1 unidad", "610-680", "25-30 g", "51-52 g", "3-4 g", "Medio"],
+      ["Papas medianas", "1 unidad", "300-430", "4-6 g", "40-60 g", "3-5 g", "Medio"],
+      ["Helado", "250 g", "450-650", "8-15 g", "65-90 g", "0-2 g", "Medio"],
+      ["Helado", "1/2 kg", "900-1300", "15-30 g", "130-180 g", "0-4 g", "Grande"],
+      ["Alfajor simple", "1 unidad", "180-250", "3-5 g", "30-40 g", "0-2 g", "Chico"],
+      ["Factura con crema", "1 unidad", "300-520", "5-9 g", "40-70 g", "1-3 g", "Medio"],
+      ["Medialuna de grasa", "1 unidad", "180-280", "4-6 g", "25-38 g", "1-2 g", "Chico"],
+      ["Don Satur", "30 g", "155", "2.7 g", "16 g", "0 g", "Chico"],
+      ["Anillos de coco", "30 g", "140", "2.4 g", "20 g", "0.6 g", "Chico"],
+      ["Chocolate", "25 g", "130-160", "1-2 g", "10-16 g", "1-4 g", "Chico"]
+    ];
+
+    recipes.push(
+      {
+        title: "Pollo napolitano al plato",
+        tags: ["pollo", "papa", "descanso", "gusto controlado"],
+        ingredients: ["250 g pollo", "tomate triturado", "30-40 g queso", "tomate + lechuga", "300-450 g papa"],
+        macros: ["750-1050 kcal", "60-80 g prot", "55-95 g carbos", "7-12 g fibra"],
+        note: "Sabor a milanesa napolitana, sin fritura. En descanso usa 300 g papa."
+      },
+      {
+        title: "Pollo barbacoa con papas",
+        tags: ["pollo", "papa", "partido", "gusto controlado"],
+        ingredients: ["250 g pollo", "20-30 g salsa barbacoa", "400-550 g papa al horno", "cebolla + pimiento"],
+        macros: ["700-980 kcal", "55-75 g prot", "75-115 g carbos", "7-12 g fibra"],
+        note: "Ideal post partido. Medir barbacoa porque sube azucar rapido."
+      },
+      {
+        title: "Pollo mostaza y queso untable",
+        tags: ["pollo", "rapida", "descanso"],
+        ingredients: ["250 g pollo", "20-35 g queso untable", "mostaza", "tomate + lechuga", "1 rapidita o 250 g papa"],
+        macros: ["520-820 kcal", "60-80 g prot", "30-70 g carbos", "4-9 g fibra"],
+        note: "Muy buena para cena liviana o cuando no queres cocinar mucho."
+      },
+      {
+        title: "Pollo tipo fajitas",
+        tags: ["pollo", "wrap", "partido", "rapida"],
+        ingredients: ["250 g pollo en tiras", "cebolla + pimiento", "2 rapiditas", "30 g queso", "tomate"],
+        macros: ["700-950 kcal", "60-80 g prot", "55-85 g carbos", "6-10 g fibra"],
+        note: "Una de las mejores para sentir comida rica sin pedir delivery."
+      },
+      {
+        title: "Pollo pizza bowl",
+        tags: ["pollo", "arroz", "gusto controlado", "rapida"],
+        ingredients: ["250 g pollo", "220-280 g arroz cocido", "tomate triturado", "40 g queso", "oregano si tenes"],
+        macros: ["750-1000 kcal", "60-80 g prot", "70-100 g carbos", "3-7 g fibra"],
+        note: "Antojo de pizza en formato bowl, con bastante proteina."
+      },
+      {
+        title: "Pollo con arroz rojo",
+        tags: ["pollo", "arroz", "meal prep"],
+        ingredients: ["250 g pollo", "280-350 g arroz cocido", "tomate triturado", "cebolla + pimiento"],
+        macros: ["700-950 kcal", "55-75 g prot", "85-115 g carbos", "4-8 g fibra"],
+        note: "Meal prep simple: una olla de salsa y varias porciones."
+      },
+      {
+        title: "Pollo frio tipo ensalada completa",
+        tags: ["pollo", "descanso", "rapida"],
+        ingredients: ["250 g pollo frio", "tomate + lechuga", "300 g papa fria", "15-20 g mayo o queso untable"],
+        macros: ["650-900 kcal", "60-80 g prot", "55-75 g carbos", "7-12 g fibra"],
+        note: "Buena para verano y para no recalentar comida."
+      },
+      {
+        title: "Pollo al plato con rapidita crocante",
+        tags: ["pollo", "wrap", "descanso"],
+        ingredients: ["250 g pollo", "1 rapidita tostada en triangulos", "tomate + lechuga", "queso untable medido"],
+        macros: ["500-720 kcal", "60-80 g prot", "25-50 g carbos", "4-8 g fibra"],
+        note: "Da sensacion de snack/crocante sin abrir galletitas."
+      },
+      {
+        title: "Carne molida a la criolla",
+        tags: ["carne", "arroz", "meal prep"],
+        ingredients: ["250 g carne molida", "cebolla + pimiento", "tomate triturado", "250-320 g arroz cocido"],
+        macros: ["800-1050 kcal", "55-75 g prot", "80-110 g carbos", "5-9 g fibra"],
+        note: "Base para bowl, wrap, pasta o pastel de papa."
+      },
+      {
+        title: "Carne molida con papa cubeteada",
+        tags: ["carne", "papa", "meal prep"],
+        ingredients: ["250 g carne molida", "350-500 g papa en cubos", "cebolla + pimiento", "tomate triturado"],
+        macros: ["850-1150 kcal", "55-75 g prot", "75-110 g carbos", "8-13 g fibra"],
+        note: "Tipo guiso seco, sin legumbres y muy saciante."
+      },
+      {
+        title: "Carne molida tipo taco bowl",
+        tags: ["carne", "arroz", "gusto controlado"],
+        ingredients: ["230 g carne molida", "250 g arroz cocido", "tomate", "30 g queso", "pimiento + cebolla"],
+        macros: ["800-1050 kcal", "55-75 g prot", "75-105 g carbos", "5-9 g fibra"],
+        note: "Si queres mas gusto, usa ketchup/barbacoa medido."
+      },
+      {
+        title: "Carne molida pizza de rapidita",
+        tags: ["carne", "wrap", "gusto controlado"],
+        ingredients: ["1-2 rapiditas", "180-220 g carne molida", "tomate triturado", "40 g queso", "pimiento"],
+        macros: ["650-1000 kcal", "45-70 g prot", "40-80 g carbos", "4-9 g fibra"],
+        note: "Version pizza-hamburguesa. Mejor que pedir una grande sin control."
+      },
+      {
+        title: "Bife encebollado con arroz",
+        tags: ["carne", "arroz", "gym"],
+        ingredients: ["250 g bife", "300 g arroz cocido", "cebolla dorada", "tomate/lechuga al lado"],
+        macros: ["750-1050 kcal", "55-80 g prot", "80-105 g carbos", "4-8 g fibra"],
+        note: "Buen plato de energia para gym fuerte."
+      },
+      {
+        title: "Bife con salsa de tomate y queso",
+        tags: ["carne", "papa", "gusto controlado"],
+        ingredients: ["250 g bife", "tomate triturado", "30 g queso", "300-450 g papa", "pimiento"],
+        macros: ["800-1100 kcal", "60-85 g prot", "55-95 g carbos", "7-12 g fibra"],
+        note: "Napolitano de bife sin empanar."
+      },
+      {
+        title: "Costeleta con pure rustico",
+        tags: ["carne", "papa", "descanso"],
+        ingredients: ["220-260 g costeleta", "300-450 g papa pisada", "cebolla salteada", "tomate"],
+        macros: ["750-1100 kcal", "45-70 g prot", "55-90 g carbos", "6-11 g fibra"],
+        note: "Si el corte tiene mucha grasa, no agregues aceite."
+      },
+      {
+        title: "Cerdo salteado agridulce simple",
+        tags: ["cerdo", "arroz", "partido"],
+        ingredients: ["230 g cerdo", "280 g arroz cocido", "pimiento + cebolla", "ketchup medido + mostaza"],
+        macros: ["750-1000 kcal", "45-65 g prot", "85-115 g carbos", "4-8 g fibra"],
+        note: "Parecido a comida de rotiseria, pero medido."
+      },
+      {
+        title: "Cerdo en wrap con queso",
+        tags: ["cerdo", "wrap", "rapida"],
+        ingredients: ["220 g cerdo", "1-2 rapiditas", "30 g queso", "cebolla + pimiento", "tomate"],
+        macros: ["650-950 kcal", "45-65 g prot", "45-80 g carbos", "5-9 g fibra"],
+        note: "Muy buena para variar del pollo."
+      },
+      {
+        title: "Cerdo con fideos rojos",
+        tags: ["cerdo", "fideos", "gym"],
+        ingredients: ["220 g cerdo", "90-110 g fideos secos", "tomate triturado", "pimiento + cebolla"],
+        macros: ["800-1100 kcal", "50-70 g prot", "85-115 g carbos", "5-9 g fibra"],
+        note: "Dia de entreno o partido, no cena liviana."
+      },
+      {
+        title: "Arroz con hamburguesa rota",
+        tags: ["carne", "arroz", "rapida"],
+        ingredients: ["2 medallones picados", "250-320 g arroz cocido", "tomate triturado o ketchup medido", "cebolla"],
+        macros: ["750-1050 kcal", "45-70 g prot", "75-110 g carbos", "3-7 g fibra"],
+        note: "Usa medallones como carne molida cuando no hay ganas."
+      },
+      {
+        title: "Papas cargadas con pollo",
+        tags: ["pollo", "papa", "gusto controlado"],
+        ingredients: ["450-600 g papa al horno", "250 g pollo", "30 g queso", "tomate + cebolla"],
+        macros: ["800-1100 kcal", "60-80 g prot", "90-125 g carbos", "9-15 g fibra"],
+        note: "Volumen alto y rico. Post entreno va perfecto."
+      },
+      {
+        title: "Papas cargadas con carne",
+        tags: ["carne", "papa", "gusto controlado"],
+        ingredients: ["450 g papa", "220 g carne molida", "tomate triturado", "30 g queso", "pimiento"],
+        macros: ["900-1200 kcal", "55-75 g prot", "85-115 g carbos", "9-14 g fibra"],
+        note: "Tipo comida chatarra casera, mas controlada."
+      },
+      {
+        title: "Papas con jamon y queso al horno",
+        tags: ["papa", "merienda", "gusto controlado"],
+        ingredients: ["350-450 g papa", "100 g jamon", "40 g queso", "tomate/lechuga al lado"],
+        macros: ["650-900 kcal", "30-50 g prot", "65-95 g carbos", "7-12 g fibra"],
+        note: "Agregar pollo si necesitas subir proteina."
+      },
+      {
+        title: "Tarta falsa en rapidita",
+        tags: ["wrap", "rapida", "descanso"],
+        ingredients: ["1 rapidita como base", "200 g pollo o carne", "tomate triturado", "30 g queso", "pimiento"],
+        macros: ["520-780 kcal", "45-70 g prot", "30-55 g carbos", "4-8 g fibra"],
+        note: "Horno/sarten. Queda como mini tarta sin masa grande."
+      },
+      {
+        title: "Quesadilla de pollo",
+        tags: ["pollo", "wrap", "merienda"],
+        ingredients: ["1 rapidita", "180-220 g pollo", "30 g queso", "pimiento", "tomate al lado"],
+        macros: ["500-760 kcal", "45-70 g prot", "25-50 g carbos", "4-8 g fibra"],
+        note: "Merienda fuerte o cena rapida."
+      },
+      {
+        title: "Quesadilla de carne",
+        tags: ["carne", "wrap", "merienda"],
+        ingredients: ["1 rapidita", "180-220 g carne", "30 g queso", "cebolla", "tomate al lado"],
+        macros: ["550-820 kcal", "45-65 g prot", "25-50 g carbos", "4-8 g fibra"],
+        note: "Sacia mas que galletitas y te salva la tarde."
+      },
+      {
+        title: "Sandwich de hamburguesa sin papas",
+        tags: ["carne", "gusto controlado", "rapida"],
+        ingredients: ["1 pan", "2 medallones", "30 g queso", "tomate + lechuga", "mostaza/ketchup medido"],
+        macros: ["700-950 kcal", "45-70 g prot", "40-65 g carbos", "3-6 g fibra"],
+        note: "Si queres gusto de hamburguesa, esta es la version normal usable."
+      },
+      {
+        title: "Sandwich de pollo y queso",
+        tags: ["pollo", "merienda", "rapida"],
+        ingredients: ["2-3 panes", "200 g pollo", "30 g queso", "tomate + lechuga", "mostaza"],
+        macros: ["600-850 kcal", "55-75 g prot", "50-85 g carbos", "4-8 g fibra"],
+        note: "Muy buen reemplazo de panaderia cuando hay ansiedad."
+      },
+      {
+        title: "Sandwich de jamon queso y pollo",
+        tags: ["pollo", "merienda", "rapida"],
+        ingredients: ["2 panes", "120 g pollo", "70 g jamon", "25 g queso", "tomate"],
+        macros: ["550-780 kcal", "50-70 g prot", "45-75 g carbos", "3-7 g fibra"],
+        note: "Mas proteico que un tostado comun."
+      },
+      {
+        title: "Merienda dulce controlada 1",
+        tags: ["merienda", "gusto controlado"],
+        ingredients: ["500 ml leche proteica", "1 banana", "1 medialuna de grasa"],
+        macros: ["500-750 kcal", "25-45 g prot", "70-105 g carbos", "4-8 g fibra"],
+        note: "Si hay medialuna, que no sea mate + paquete entero de otra cosa."
+      },
+      {
+        title: "Merienda dulce controlada 2",
+        tags: ["merienda", "gusto controlado"],
+        ingredients: ["500 ml leche proteica", "1 alfajor simple", "1 fruta si seguis con hambre"],
+        macros: ["500-800 kcal", "25-45 g prot", "65-110 g carbos", "3-8 g fibra"],
+        note: "El alfajor entra mejor cuando va con proteina."
+      },
+      {
+        title: "Merienda salada Don Satur medida",
+        tags: ["merienda", "gusto controlado"],
+        ingredients: ["30 g Don Satur", "100 g jamon", "30 g queso", "tomate o fruta"],
+        macros: ["400-650 kcal", "25-40 g prot", "25-55 g carbos", "1-5 g fibra"],
+        note: "Poner 30 g en plato. No comer directo del paquete."
+      },
+      {
+        title: "Merienda anillos de coco medida",
+        tags: ["merienda", "gusto controlado"],
+        ingredients: ["30 g anillos de coco", "500 ml leche proteica", "cafe o mate"],
+        macros: ["400-620 kcal", "25-42 g prot", "45-75 g carbos", "1-4 g fibra"],
+        note: "Gusto chico real. Si duplicas, ya cuenta como gusto medio."
+      },
+      {
+        title: "Pre entreno simple",
+        tags: ["partido", "merienda", "rapida"],
+        ingredients: ["1 banana", "cafe", "1 pan con queso untable o jamon", "agua"],
+        macros: ["250-500 kcal", "10-25 g prot", "45-80 g carbos", "3-6 g fibra"],
+        note: "60-120 minutos antes. Bajo en grasa para no caer pesado."
+      },
+      {
+        title: "Post entreno rapido",
+        tags: ["partido", "gym", "rapida"],
+        ingredients: ["500 ml leche proteica", "1 banana", "sandwich chico de jamon y queso"],
+        macros: ["650-950 kcal", "40-65 g prot", "80-125 g carbos", "4-8 g fibra"],
+        note: "Para no llegar a la noche con hambre descontrolada."
+      },
+      {
+        title: "Dia social antes de salir",
+        tags: ["descanso", "rapida", "gusto controlado"],
+        ingredients: ["300 g pollo o carne", "300 g papa", "tomate + lechuga", "agua"],
+        macros: ["650-900 kcal", "65-90 g prot", "55-75 g carbos", "7-12 g fibra"],
+        note: "Comer esto antes baja mucho el riesgo de arrasar con todo."
+      },
+      {
+        title: "Recovery despues de alcohol",
+        tags: ["descanso", "rapida"],
+        ingredients: ["250 g pollo", "400 g papa", "tomate + sal", "agua", "fruta"],
+        macros: ["650-900 kcal", "55-75 g prot", "80-115 g carbos", "8-14 g fibra"],
+        note: "No castigo ni ayuno extremo. Volver a lo simple."
+      }
+    );
+
+    const filters = ["todas", "pollo", "carne", "cerdo", "papa", "arroz", "fideos", "wrap", "gym", "partido", "descanso", "rapida", "meal prep", "merienda", "gusto controlado"];
+    let currentFilter = "todas";
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => Array.from(document.querySelectorAll(selector));
+
+    function renderFilters() {
+      $("#filters").innerHTML = filters.map(filter =>
+        `<button class="pill ${filter === currentFilter ? "active" : ""}" data-filter="${filter}">${filter}</button>`
+      ).join("");
+      $$("#filters .pill").forEach(button => {
+        button.addEventListener("click", () => {
+          currentFilter = button.dataset.filter;
+          renderFilters();
+          renderRecipes();
+        });
+      });
+    }
+
+    function recipeCard(recipe) {
+      const tagHtml = recipe.tags.map(tag => `<span class="tag">${tag}</span>`).join("");
+      const items = recipe.ingredients.map(item => `<li>${item}</li>`).join("");
+      const macros = recipe.macros.map(macro => {
+        const [value, ...rest] = macro.split(" ");
+        return `<div><strong>${value}</strong>${rest.join(" ")}</div>`;
+      }).join("");
+      return `
+        <article class="card recipe-card">
+          <div>
+            <h3>${recipe.title}</h3>
+            <div class="tags">${tagHtml}</div>
+          </div>
+          <ul class="ingredients">${items}</ul>
+          <div class="macros">${macros}</div>
+          <p class="small">${recipe.note}</p>
+        </article>
+      `;
+    }
+
+    function renderRecipes() {
+      const query = ($("#recipeSearch")?.value || "").trim().toLowerCase();
+      const list = currentFilter === "todas"
+        ? recipes
+        : recipes.filter(recipe => recipe.tags.includes(currentFilter));
+      const searched = query
+        ? list.filter(recipe => {
+            const text = `${recipe.title} ${recipe.tags.join(" ")} ${recipe.ingredients.join(" ")} ${recipe.note}`.toLowerCase();
+            return text.includes(query);
+          })
+        : list;
+      $("#recipeCount").textContent = `${searched.length} ideas disponibles`;
+      $("#recipeList").innerHTML = searched.map(recipeCard).join("");
+    }
+
+    function renderTreats() {
+      $("#treatTable").innerHTML = treats.map(row => {
+        const level = row[6];
+        const cls = level === "Chico" ? "tag" : level === "Medio" ? "tag amber" : "tag red";
+        return `<tr>${row.slice(0, 6).map(cell => `<td>${cell}</td>`).join("")}<td><span class="${cls}">${level}</span></td></tr>`;
+      }).join("");
+    }
+
+    function buildIdea() {
+      const protein = $("#proteinPick").value;
+      const carb = $("#carbPick").value;
+      const veg = $("#vegPick").value;
+      const format = $("#formatPick").value;
+      const portion = protein === "jamon y queso"
+        ? "100 g jamon + 30 g queso"
+        : protein === "hamburguesa casera"
+          ? "2 medallones o 220 g carne"
+          : `220-260 g ${protein}`;
+      const carbText = {
+        papa: "300-500 g papa",
+        arroz: "220-320 g arroz cocido",
+        fideos: "80-110 g fideos secos",
+        rapiditas: "1-2 rapiditas",
+        pan: "1-3 panes segun el dia"
+      }[carb];
+      $("#builtIdea").innerHTML = `<strong>${format} de ${protein} con ${carb}</strong><br>${portion} + ${carbText} + ${veg}. En descanso usa el extremo bajo; en gym o partido usa el extremo alto.`;
+    }
+
+    function switchScreen(name) {
+      $$(".screen").forEach(screen => screen.classList.toggle("active", screen.id === name));
+      $$(".tab").forEach(tab => tab.classList.toggle("active", tab.dataset.screen === name));
+      window.scrollTo({ top: 0, behavior: "instant" });
+    }
+
+    const diaryKey = "lucas-food-diary-v2";
+    const targets = {
+      "Gym fuerte": {
+        kcal:    { min: 3200, max: 3500 },
+        protein: { min: 190,  max: 210 },
+        carbs:   { min: 380,  max: 460 },
+        fat:     { min: 75,   max: 95  },
+        fiber:   { min: 30,   max: 40  }
+      },
+      "Futsal/partido": {
+        kcal:    { min: 3200, max: 3500 },
+        protein: { min: 190,  max: 210 },
+        carbs:   { min: 420,  max: 510 },
+        fat:     { min: 70,   max: 90  },
+        fiber:   { min: 30,   max: 40  }
+      },
+      "Descanso": {
+        kcal:    { min: 2800, max: 3000 },
+        protein: { min: 190,  max: 210 },
+        carbs:   { min: 230,  max: 310 },
+        fat:     { min: 80,   max: 100 },
+        fiber:   { min: 30,   max: 40  }
+      },
+      "Social": {
+        flexible: true,
+        protein: { min: 180, floor: true }
+      }
+    };
+    const mealSlots = [
+      "Primera comida",
+      "Almuerzo",
+      "Merienda",
+      "Pre-entreno",
+      "Cena / post-entreno",
+      "Madrugada / social"
+    ];
+
+    function midNumber(text) {
+      const match = String(text).match(/(\d+(?:\.\d+)?)(?:-(\d+(?:\.\d+)?))?/);
+      if (!match) return 0;
+      const first = Number(match[1]);
+      const second = match[2] ? Number(match[2]) : first;
+      return Math.round((first + second) / 2);
+    }
+
+    function escapeHtml(value) {
+      return String(value || "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+      }[char]));
+    }
+
+    function deriveFat(kcal, protein, carbs) {
+      const remaining = Number(kcal || 0) - Number(protein || 0) * 4 - Number(carbs || 0) * 4;
+      return Math.max(0, Math.round(remaining / 9));
+    }
+
+    const foodPresets = [
+      { name: "Personalizada", portion: "", kcal: "", protein: "", carbs: "", fat: "", fiber: "", note: "" },
+      ...recipes.map(recipe => {
+        const kcal = midNumber(recipe.macros[0]);
+        const protein = midNumber(recipe.macros[1]);
+        const carbs = midNumber(recipe.macros[2]);
+        return {
+          name: recipe.title,
+          portion: recipe.ingredients.slice(0, 2).join(" + "),
+          kcal, protein, carbs,
+          fat: deriveFat(kcal, protein, carbs),
+          fiber: midNumber(recipe.macros[3]),
+          note: recipe.note
+        };
+      }),
+      ...treats.map(row => {
+        const kcal = midNumber(row[2]);
+        const protein = midNumber(row[3]);
+        const carbs = midNumber(row[4]);
+        return {
+          name: row[0],
+          portion: row[1],
+          kcal, protein, carbs,
+          fat: deriveFat(kcal, protein, carbs),
+          fiber: midNumber(row[5]),
+          note: `Gusto ${row[6].toLowerCase()}`
+        };
+      })
+    ];
+
+    function getDiary() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(diaryKey));
+        if (saved && saved.checkins && Array.isArray(saved.foods)) {
+          saved.presetUsage = saved.presetUsage || {};
+          saved.favorites = saved.favorites || [];
+          saved.measurements = saved.measurements || {};
+          return saved;
+        }
+      } catch {}
+      return { checkins: {}, foods: [], presetUsage: {}, favorites: [], measurements: {} };
+    }
+
+    function saveDiary(data) {
+      localStorage.setItem(diaryKey, JSON.stringify(data));
+    }
+
+    function currentDate() {
+      return $("#logDate").value || new Date().toISOString().slice(0, 10);
+    }
+
+    function currentCheckin() {
+      const diary = getDiary();
+      return diary.checkins[currentDate()] || {
+        type: $("#logType").value || "Gym fuerte",
+        water: "3 L o mas",
+        sleep: "6-7 h",
+        energy: "Bien",
+        hunger: "Controlada",
+        note: ""
+      };
+    }
+
+    function totalsForDate(date) {
+      return getDiary().foods
+        .filter(item => item.date === date)
+        .reduce((sum, item) => {
+          sum.kcal += Number(item.kcal) || 0;
+          sum.protein += Number(item.protein) || 0;
+          sum.carbs += Number(item.carbs) || 0;
+          sum.fat += Number(item.fat) || 0;
+          sum.fiber += Number(item.fiber) || 0;
+          return sum;
+        }, { kcal: 0, protein: 0, carbs: 0, fat: 0, fiber: 0 });
+    }
+
+    function summaryBox(label, value, range, unit) {
+      const v = Math.round(value);
+      if (!range) {
+        return `
+          <div class="summary-box flex">
+            <span class="small">${label}</span>
+            <strong>${v}${unit}</strong>
+            <span class="small">Flexible</span>
+            <div class="progress"><span style="width:0%"></span></div>
+          </div>
+        `;
+      }
+      if (range.floor) {
+        const pct = Math.min(120, Math.round((value / range.min) * 100));
+        const status = value >= range.min ? "ok" : "below";
+        return `
+          <div class="summary-box ${status}">
+            <span class="small">${label}</span>
+            <strong>${v}${unit}</strong>
+            <span class="small">Piso ${range.min}${unit}</span>
+            <div class="progress"><span style="width:${pct}%"></span></div>
+          </div>
+        `;
+      }
+      const pct = Math.min(120, Math.round((value / range.max) * 100));
+      let status = "below";
+      if (value >= range.min && value <= range.max) status = "ok";
+      else if (value > range.max) status = "over";
+      return `
+        <div class="summary-box ${status}">
+          <span class="small">${label}</span>
+          <strong>${v}${unit}</strong>
+          <span class="small">Meta ${range.min}-${range.max}${unit}</span>
+          <div class="progress"><span style="width:${pct}%"></span></div>
+        </div>
+      `;
+    }
+
+    function renderDailySummary() {
+      const checkin = currentCheckin();
+      const total = totalsForDate(currentDate());
+      const target = targets[checkin.type] || targets["Gym fuerte"];
+      const flexible = target.flexible;
+      $("#dailySummary").innerHTML = [
+        summaryBox("Calorias", total.kcal, flexible ? null : target.kcal, ""),
+        summaryBox("Proteina", total.protein, target.protein, " g"),
+        summaryBox("Carbos", total.carbs, flexible ? null : target.carbs, " g"),
+        summaryBox("Grasa", total.fat, flexible ? null : target.fat, " g"),
+        summaryBox("Fibra", total.fiber, flexible ? null : target.fiber, " g")
+      ].join("");
+    }
+
+    function loadCheckinFields() {
+      const checkin = currentCheckin();
+      $("#logType").value = checkin.type;
+      $("#logWater").value = checkin.water;
+      $("#logSleep").value = checkin.sleep;
+      $("#logEnergy").value = checkin.energy;
+      $("#logHunger").value = checkin.hunger;
+      $("#logNote").value = checkin.note || "";
+      const measurement = (getDiary().measurements || {})[currentDate()] || {};
+      $("#logWeight").value = measurement.weight ?? "";
+      $("#logWaist").value = measurement.waist ?? "";
+      renderDailySummary();
+      renderMealDiary();
+      renderBodyCard();
+    }
+
+    function renderMealDiary() {
+      const date = currentDate();
+      const foods = getDiary().foods.filter(item => item.date === date);
+      $("#mealDiary").innerHTML = mealSlots.map(meal => {
+        const entries = foods.filter(item => item.meal === meal);
+        const subtotal = entries.reduce((sum, item) => {
+          sum.kcal += Number(item.kcal) || 0;
+          sum.protein += Number(item.protein) || 0;
+          return sum;
+        }, { kcal: 0, protein: 0 });
+        const body = entries.length ? entries.map(item => `
+          <div class="entry">
+            <div>
+              <div class="entry-title">${escapeHtml(item.name)}</div>
+              <div class="small">${escapeHtml(item.portion)} · ${item.kcal || 0} kcal · ${item.protein || 0} g prot · ${item.carbs || 0} g carbos · ${item.fat || 0} g grasa · ${item.fiber || 0} g fibra</div>
+              ${item.note ? `<div class="small">${escapeHtml(item.note)}</div>` : ""}
+            </div>
+            <div class="entry-actions">
+              <button data-duplicate="${item.id}">Duplicar</button>
+              <button data-delete="${item.id}">Borrar</button>
+            </div>
+          </div>
+        `).join("") : `<p class="small">Sin comidas cargadas.</p>`;
+        return `
+          <article class="meal-card">
+            <div class="meal-head">
+              <h3>${meal}</h3>
+              <span class="small">${Math.round(subtotal.kcal)} kcal · ${Math.round(subtotal.protein)} g prot</span>
+            </div>
+            ${body}
+          </article>
+        `;
+      }).join("");
+      $$("[data-delete]").forEach(button => {
+        button.addEventListener("click", () => {
+          const diary = getDiary();
+          diary.foods = diary.foods.filter(item => item.id !== button.dataset.delete);
+          saveDiary(diary);
+          renderDailySummary();
+          renderMealDiary();
+        });
+      });
+      $$("[data-duplicate]").forEach(button => {
+        button.addEventListener("click", () => {
+          const diary = getDiary();
+          const src = diary.foods.find(item => item.id === button.dataset.duplicate);
+          if (!src) return;
+          diary.foods.push({
+            ...src,
+            id: `${Date.now()}-${Math.random().toString(16).slice(2)}`
+          });
+          saveDiary(diary);
+          renderDailySummary();
+          renderMealDiary();
+        });
+      });
+    }
+
+    function fillFoodPreset() {
+      const preset = foodPresets.find(item => item.name === $("#foodPreset").value) || foodPresets[0];
+      $("#foodName").value = preset.name === "Personalizada" ? "" : preset.name;
+      $("#foodPortion").value = preset.portion;
+      $("#foodKcal").value = preset.kcal;
+      $("#foodProtein").value = preset.protein;
+      $("#foodCarbs").value = preset.carbs;
+      $("#foodFat").value = preset.fat;
+      $("#foodFiber").value = preset.fiber;
+      $("#foodNote").value = preset.note;
+    }
+
+    function setupDiaryControls() {
+      $("#foodMeal").innerHTML = mealSlots.map(meal => `<option>${meal}</option>`).join("");
+      $("#foodPreset").innerHTML = foodPresets.map(item => `<option>${escapeHtml(item.name)}</option>`).join("");
+      $("#foodPreset").addEventListener("change", fillFoodPreset);
+      fillFoodPreset();
+      renderQuickPills();
+    }
+
+    function usePreset(name) {
+      const preset = foodPresets.find(p => p.name === name);
+      if (preset) {
+        $("#foodPreset").value = name;
+        fillFoodPreset();
+      } else {
+        $("#foodPreset").value = "Personalizada";
+        fillFoodPreset();
+        $("#foodName").value = name;
+      }
+      $("#foodKcal").focus();
+    }
+
+    function toggleFavorite(name) {
+      const diary = getDiary();
+      const idx = diary.favorites.indexOf(name);
+      if (idx >= 0) diary.favorites.splice(idx, 1);
+      else diary.favorites.push(name);
+      saveDiary(diary);
+      renderQuickPills();
+    }
+
+    function renderQuickPills() {
+      const container = $("#quickPills");
+      if (!container) return;
+      const diary = getDiary();
+      const fav = diary.favorites;
+      const usage = diary.presetUsage;
+      const recents = Object.entries(usage)
+        .filter(([name]) => !fav.includes(name))
+        .sort((a, b) => {
+          const delta = b[1].count - a[1].count;
+          if (delta !== 0) return delta;
+          return new Date(b[1].lastUsed || 0) - new Date(a[1].lastUsed || 0);
+        })
+        .slice(0, 8)
+        .map(([name]) => name);
+      const pills = [...fav, ...recents];
+      if (!pills.length) {
+        container.innerHTML = `<span class="small">Las comidas que cargues van a aparecer aca.</span>`;
+        return;
+      }
+      container.innerHTML = pills.map(name => {
+        const isFav = fav.includes(name);
+        const star = isFav ? "&#9733;" : "&#9734;";
+        return `<button class="pill" data-preset="${escapeHtml(name)}"><span class="fav-toggle ${isFav ? 'on' : ''}" data-fav="${escapeHtml(name)}">${star}</span>${escapeHtml(name)}</button>`;
+      }).join("");
+      container.querySelectorAll(".pill").forEach(button => {
+        button.addEventListener("click", evt => {
+          const favTarget = evt.target.closest(".fav-toggle");
+          if (favTarget) {
+            evt.stopPropagation();
+            toggleFavorite(favTarget.dataset.fav);
+            return;
+          }
+          usePreset(button.dataset.preset);
+        });
+      });
+    }
+
+    function getMeasurements() {
+      const m = getDiary().measurements || {};
+      return Object.entries(m)
+        .filter(([_, value]) => value && (value.weight || value.waist))
+        .map(([date, value]) => ({ date, ...value }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    function computeEWMA(values, alpha) {
+      if (!values.length) return [];
+      const trend = [values[0]];
+      for (let i = 1; i < values.length; i++) {
+        trend.push(alpha * values[i] + (1 - alpha) * trend[i - 1]);
+      }
+      return trend;
+    }
+
+    function renderBodyCard() {
+      const summaryEl = $("#bodySummary");
+      const svgEl = $("#weightChart");
+      if (!summaryEl || !svgEl) return;
+      const measurements = getMeasurements();
+      const weights = measurements.filter(m => m.weight);
+      const waists = measurements.filter(m => m.waist);
+      const parts = [];
+      if (weights.length) {
+        const last = weights[weights.length - 1];
+        const trend = computeEWMA(weights.map(w => Number(w.weight)), 0.1);
+        const lastTrend = trend[trend.length - 1].toFixed(1);
+        parts.push(`Ultimo peso <strong>${last.weight} kg</strong> (${last.date}). Tendencia <strong>${lastTrend} kg</strong>.`);
+      } else {
+        parts.push(`Carga tu peso en el check-in para ver tendencia.`);
+      }
+      if (waists.length >= 1) {
+        const last = waists[waists.length - 1];
+        if (waists.length >= 2) {
+          const lastDate = new Date(last.date + "T12:00:00");
+          const targetDate = new Date(lastDate);
+          targetDate.setDate(targetDate.getDate() - 28);
+          const targetKey = targetDate.toISOString().slice(0, 10);
+          const candidates = waists.filter(w => w.date <= targetKey);
+          const prev = candidates.length ? candidates[candidates.length - 1] : waists[0];
+          if (prev && prev.date !== last.date) {
+            const delta = (Number(last.waist) - Number(prev.waist));
+            const sign = delta >= 0 ? "+" : "";
+            parts.push(`Cintura <strong>${last.waist} cm</strong> (${sign}${delta.toFixed(1)} cm vs ${prev.date}).`);
+          } else {
+            parts.push(`Cintura <strong>${last.waist} cm</strong>.`);
+          }
+        } else {
+          parts.push(`Cintura <strong>${last.waist} cm</strong>.`);
+        }
+      }
+      summaryEl.innerHTML = parts.join(" ");
+
+      if (weights.length < 2) {
+        svgEl.innerHTML = `<text x="180" y="55" text-anchor="middle" fill="#69716f" font-size="12">Necesitas 2 pesadas para dibujar tendencia.</text>`;
+        return;
+      }
+      const W = 360, H = 100, PAD = 10;
+      const ys = weights.map(w => Number(w.weight));
+      const trend = computeEWMA(ys, 0.1);
+      const allY = [...ys, ...trend];
+      const yMin = Math.min(...allY) - 0.5;
+      const yMax = Math.max(...allY) + 0.5;
+      const xScale = i => PAD + (i / (ys.length - 1)) * (W - 2 * PAD);
+      const yScale = y => H - PAD - ((y - yMin) / (yMax - yMin || 1)) * (H - 2 * PAD);
+      const trendPath = trend.map((t, i) => `${i === 0 ? "M" : "L"} ${xScale(i).toFixed(1)} ${yScale(t).toFixed(1)}`).join(" ");
+      const dots = ys.map((y, i) => `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(y).toFixed(1)}" r="2.5" fill="#1f6b54" opacity="0.55" />`).join("");
+      svgEl.innerHTML = `
+        <path d="${trendPath}" fill="none" stroke="#173a32" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        ${dots}
+      `;
+    }
+
+    function registerServiceWorker() {
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+      }
+    }
+
+    let deferredPrompt;
+    window.addEventListener("beforeinstallprompt", event => {
+      event.preventDefault();
+      deferredPrompt = event;
+      $("#installBtn").hidden = false;
+    });
+
+    $("#installBtn").addEventListener("click", async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      $("#installBtn").hidden = true;
+    });
+
+    $$(".tab").forEach(tab => tab.addEventListener("click", () => switchScreen(tab.dataset.screen)));
+    $("#recipeSearch").addEventListener("input", renderRecipes);
+    $("#buildBtn").addEventListener("click", buildIdea);
+    $("#logDate").value = new Date().toISOString().slice(0, 10);
+    $("#logDate").addEventListener("change", loadCheckinFields);
+    $("#logType").addEventListener("change", renderDailySummary);
+    $("#saveCheckin").addEventListener("click", () => {
+      const diary = getDiary();
+      diary.checkins[currentDate()] = {
+        type: $("#logType").value,
+        water: $("#logWater").value,
+        sleep: $("#logSleep").value,
+        energy: $("#logEnergy").value,
+        hunger: $("#logHunger").value,
+        note: $("#logNote").value.trim()
+      };
+      const weight = parseFloat($("#logWeight").value);
+      const waist = parseFloat($("#logWaist").value);
+      const existing = diary.measurements[currentDate()] || {};
+      const next = { ...existing, ts: new Date().toISOString() };
+      if (!isNaN(weight)) next.weight = weight; else delete next.weight;
+      if (!isNaN(waist)) next.waist = waist; else delete next.waist;
+      if (next.weight || next.waist) {
+        diary.measurements[currentDate()] = next;
+      } else {
+        delete diary.measurements[currentDate()];
+      }
+      saveDiary(diary);
+      renderDailySummary();
+      renderBodyCard();
+    });
+    $("#copyYesterday").addEventListener("click", () => {
+      const today = currentDate();
+      const ref = new Date(today + "T12:00:00");
+      ref.setDate(ref.getDate() - 1);
+      const yKey = ref.toISOString().slice(0, 10);
+      const diary = getDiary();
+      const sources = diary.foods.filter(item => item.date === yKey);
+      if (!sources.length) {
+        alert(`No hay comidas cargadas para ${yKey}.`);
+        return;
+      }
+      const existing = diary.foods.filter(item => item.date === today).length;
+      const msg = existing > 0
+        ? `Va a SUMAR ${sources.length} comidas de ${yKey} a las ${existing} ya cargadas en ${today}. Seguir?`
+        : `Copiar ${sources.length} comidas de ${yKey} a ${today}?`;
+      if (!confirm(msg)) return;
+      const stamp = new Date().toISOString();
+      sources.forEach(src => {
+        diary.foods.push({
+          ...src,
+          id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+          date: today
+        });
+        const usage = diary.presetUsage[src.name] || { count: 0, lastUsed: null };
+        usage.count += 1;
+        usage.lastUsed = stamp;
+        diary.presetUsage[src.name] = usage;
+      });
+      saveDiary(diary);
+      renderDailySummary();
+      renderMealDiary();
+      renderQuickPills();
+    });
+    $("#addFood").addEventListener("click", () => {
+      const diary = getDiary();
+      const kcal = Number($("#foodKcal").value) || 0;
+      const protein = Number($("#foodProtein").value) || 0;
+      const carbs = Number($("#foodCarbs").value) || 0;
+      const fatInput = $("#foodFat").value;
+      const fat = fatInput === "" ? deriveFat(kcal, protein, carbs) : (Number(fatInput) || 0);
+      const name = $("#foodName").value.trim() || "Comida sin nombre";
+      diary.foods.push({
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        date: currentDate(),
+        meal: $("#foodMeal").value,
+        name,
+        portion: $("#foodPortion").value.trim(),
+        kcal, protein, carbs, fat,
+        fiber: Number($("#foodFiber").value) || 0,
+        note: $("#foodNote").value.trim()
+      });
+      const usage = diary.presetUsage[name] || { count: 0, lastUsed: null };
+      usage.count += 1;
+      usage.lastUsed = new Date().toISOString();
+      diary.presetUsage[name] = usage;
+      saveDiary(diary);
+      renderDailySummary();
+      renderMealDiary();
+      renderQuickPills();
+      $("#foodName").value = "";
+      $("#foodPortion").value = "";
+      $("#foodKcal").value = "";
+      $("#foodProtein").value = "";
+      $("#foodCarbs").value = "";
+      $("#foodFat").value = "";
+      $("#foodFiber").value = "";
+      $("#foodNote").value = "";
+      $("#foodPreset").value = "Personalizada";
+    });
+    $("#clearLog").addEventListener("click", () => {
+      if (confirm("Borrar check-ins y comidas guardadas en este navegador?")) {
+        localStorage.removeItem(diaryKey);
+        loadCheckinFields();
+      }
+    });
+    $("#exportLog").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(getDiary(), null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `registro-comidas-lucas-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    });
+    $("#importLog").addEventListener("click", () => $("#importFile").click());
+    $("#importFile").addEventListener("change", event => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          if (!imported || !imported.checkins || !Array.isArray(imported.foods)) throw new Error("Formato invalido");
+          saveDiary(imported);
+          loadCheckinFields();
+        } catch {
+          alert("No pude importar el archivo. Tiene que ser un JSON exportado desde esta app.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    });
+
+    renderFilters();
+    renderRecipes();
+    renderTreats();
+    setupDiaryControls();
+    loadCheckinFields();
+    buildIdea();
+    registerServiceWorker();
+  </script>
+</body>
+</html>
