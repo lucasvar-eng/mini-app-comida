@@ -1449,10 +1449,12 @@
         const c = diary.checkins[key];
         if (!c) continue;
         withData += 1;
-        if (c.sleep === "Menos de 6 h") { score += 2; reasons.push(`${dayLabel(key)}: sueño <6 h`); }
-        else if (c.sleep === "6-7 h") { score += 1; reasons.push(`${dayLabel(key)}: sueño 6-7 h`); }
-        if (c.hunger === "Alta") { score += 1; reasons.push(`${dayLabel(key)}: hambre alta`); }
-        if (c.energy === "Baja") { score += 1; reasons.push(`${dayLabel(key)}: energia baja`); }
+        const flags = [];
+        if (c.sleep === "Menos de 6 h") { score += 2; flags.push("sueño <6 h"); }
+        else if (c.sleep === "6-7 h") { score += 1; flags.push("sueño 6-7 h"); }
+        if (c.hunger === "Alta") { score += 1; flags.push("hambre alta"); }
+        if (c.energy === "Baja") { score += 1; flags.push("energia baja"); }
+        if (flags.length) reasons.push(`${dayLabel(key)}: ${flags.join(" + ")}`);
       }
       let severity = 0;
       if (withData >= 2 && score >= 6) severity = 2;
